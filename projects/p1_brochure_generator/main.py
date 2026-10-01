@@ -34,10 +34,12 @@ try:
     from .config import DEFAULT_MAX_CRAWL_PAGES, DEFAULT_MODEL
     from .crawler import EnterpriseWebCrawler
     from .generator import BrochureGenerator
+    from .build_html_brochure import generate_brochure_html
 except ImportError:
     from config import DEFAULT_MAX_CRAWL_PAGES, DEFAULT_MODEL
     from crawler import EnterpriseWebCrawler
     from generator import BrochureGenerator
+    from build_html_brochure import generate_brochure_html
 
 console = Console(highlight=False)
 
@@ -128,6 +130,14 @@ def save_output(brochure_obj, output_dir: Path, filename_base: str):
 
     console.print(f"\n[bold green]✓[/bold green] JSON exported to: [cyan]{json_path}[/cyan]")
     console.print(f"[bold green]✓[/bold green] Markdown brochure exported to: [cyan]{md_path}[/cyan]")
+
+    # Save Tailwind CSS v3 HTML Brochure
+    html_path = output_dir / f"{filename_base}_brochure.html"
+    try:
+        generate_brochure_html(json_path, html_path)
+        console.print(f"[bold green]✓[/bold green] Tailwind CSS HTML brochure exported to: [cyan]{html_path}[/cyan]")
+    except Exception as e:
+        console.print(f"[yellow]Warning: HTML export skipped: {e}[/yellow]")
 
 
 async def run_pipeline(url: str, max_pages: int = DEFAULT_MAX_CRAWL_PAGES, model: str = DEFAULT_MODEL):

@@ -63,27 +63,42 @@ projects/p1_brochure_generator/
 
 ---
 
-## 🚀 How to Run
+## 🚀 How to Run (কীভাবে রান করবেন)
 
 ### ১. ডিপেন্ডেন্সি ও ব্রাউজার ইন্সটল
-```bash
+```powershell
 pip install -r requirements.txt
-playwright install chromium
+python -m playwright install chromium
 ```
 
 ### ২. `.env` ফাইলে API Key সেট করুন
+DeepSeek অথবা OpenAI কনফিগার করুন:
 ```env
-OPENAI_API_KEY=your-api-key-here
-LLM_MODEL=gpt-4o-mini
+# DeepSeek API (OpenAI compatible)
+OPENAI_API_KEY="your-deepseek-api-key"
+OPENAI_BASE_URL="https://api.deepseek.com"
+LLM_MODEL="deepseek-chat"
 ```
 
-### ৩. রান করুন
-```bash
-# ডিফল্ট এক্সিকিউশন
-python -m projects.p1_brochure_generator.main https://stripe.com
+### ৩. রান করার কমান্ডসমূহ
 
-# কাস্টম পেজ সংখ্যা ও মডেল সহ
-python -m projects.p1_brochure_generator.main https://openai.com --pages 4 --model gpt-4o-mini
+#### অপশন A: রুট ডিরেক্টরি থেকে (মডিউল হিসেবে - Recommended)
+```powershell
+# E:\DockerProjects\saaa_rag_product\ai-engineering ডিরেক্টরি থেকে:
+python -m projects.p1_brochure_generator.main https://stripe.com --pages 3
 ```
 
-আউটপুটটি `projects/p1_brochure_generator/output/` ডিরেক্টরিতে `.json` এবং সুন্দরভাবে সাজানো `.md` ফাইল আকারে সেভ হবে।
+#### অপশন B: সরাসরি প্রজেক্ট ফোল্ডারের ভেতর থেকে
+```powershell
+# E:\DockerProjects\saaa_rag_product\ai-engineering\projects\p1_brochure_generator ডিরেক্টরি থেকে:
+python main.py https://stripe.com --pages 3
+```
+
+---
+
+## 📂 Generated Outputs (ফলাফল)
+প্রতিটি রানের পর `projects/p1_brochure_generator/output/` ফোল্ডারে ৩টি ফরম্যাটে ব্রোশিওর সংরক্ষিত হয়:
+1. `*_brochure.json` — ১০০% টাইপ-সেফ ভ্যালিডেটেড Pydantic JSON স্ট্রাকচার (ডাটাবেজ ও এপিআই ব্যবহারের জন্য)।
+2. `*_brochure.md` — এক্সিকিউটিভ সামারি ও পূর্ণাঙ্গ বিবরণ সংবলিত Markdown ফাইল।
+3. `*_brochure.html` — **Tailwind CSS v3** দিয়ে তৈরি আকর্ষণীয়, রেসপনসিভ ও ক্যাটাগরি ফিল্টারযুক্ত ওয়েব ব্রোশিওর (সরাসরি Print / PDF এক্সপোর্ট উপযোগী)।
+
