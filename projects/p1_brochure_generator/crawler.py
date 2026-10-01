@@ -9,17 +9,30 @@ import re
 from typing import Dict, List, Set
 from urllib.parse import urljoin, urlparse
 
-from .config import (
-    DEFAULT_MAX_CRAWL_PAGES,
-    EXCLUDE_URL_PATTERNS,
-    HEADLESS,
-    PRIORITY_URL_KEYWORDS,
-)
-from .compressor import (
-    calculate_token_compression_stats,
-    clean_and_compress_markdown,
-    strip_html_boilerplate,
-)
+try:
+    from .config import (
+        DEFAULT_MAX_CRAWL_PAGES,
+        EXCLUDE_URL_PATTERNS,
+        HEADLESS,
+        PRIORITY_URL_KEYWORDS,
+    )
+    from .compressor import (
+        calculate_token_compression_stats,
+        clean_and_compress_markdown,
+        strip_html_boilerplate,
+    )
+except ImportError:
+    from config import (
+        DEFAULT_MAX_CRAWL_PAGES,
+        EXCLUDE_URL_PATTERNS,
+        HEADLESS,
+        PRIORITY_URL_KEYWORDS,
+    )
+    from compressor import (
+        calculate_token_compression_stats,
+        clean_and_compress_markdown,
+        strip_html_boilerplate,
+    )
 
 
 def get_base_domain(url: str) -> str:

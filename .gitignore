@@ -1,0 +1,63 @@
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+StudyNote.md
+
+# Python bytecode & cache
+**/__pycache__/
+**/*.py[cod]
+**/*$py.class
+*.so
+.Python
+
+# Distribution / packaging
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+
+# Crawler & Browser cache (Crawl4AI & Playwright)
+.crawl4ai/
+crawl4ai_cache/
+playwright-report/
+test-results/
+.playwright/
+
+# Vector DB & Embeddings data
+chroma_db/
+.chroma/
+
+# Project Generated Outputs & Temp files
+**/output/
+*.log
+
+# IDE & Editor settings
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Operating System files
+.DS_Store
+Thumbs.db
+desktop.ini

@@ -9,8 +9,12 @@ import instructor
 from litellm import completion
 from openai import OpenAI
 
-from .config import DEFAULT_MODEL, OPENAI_API_KEY
-from .models import EnterpriseBrochure
+try:
+    from .config import DEFAULT_MODEL, OPENAI_API_KEY, OPENAI_BASE_URL
+    from .models import EnterpriseBrochure
+except ImportError:
+    from config import DEFAULT_MODEL, OPENAI_API_KEY, OPENAI_BASE_URL
+    from models import EnterpriseBrochure
 
 
 class BrochureGenerator:
@@ -26,14 +30,17 @@ class BrochureGenerator:
 
     def _initialize_instructor_client(self):
         """
-        Initializes Instructor client wrapped around litellm or openai.
-        Provides compatibility across OpenAI, Anthropic, DeepSeek, or local Ollama/vLLM.
+        Initializes Instructor client wrapped around OpenAI client or litellm.
+        Provides compatibility across OpenAI, DeepSeek, Anthropic, or local Ollama/vLLM.
         """
-        # LiteLLM allows universal model support (OpenAI, DeepSeek, Anthropic, Gemini, Ollama)
+        if OPENAI_BASE_URL:
+            # Custom base URL (e.g. DeepSeek or local vLLM/Ollama)
+            base_client = OpenAI(api_key=OPENAI_API_KEY, base_url=OPENAI_BASE_URL)
+            return instructor.from_openai(base_client)
+
         try:
             return instructor.from_litellm(completion)
         except Exception:
-            # Fallback to standard OpenAI client if litellm wrapper is unavailable
             base_client = OpenAI(api_key=OPENAI_API_KEY)
             return instructor.from_openai(base_client)
 

@@ -10,16 +10,36 @@ import json
 import os
 import sys
 from pathlib import Path
+
+# Ensure UTF-8 output on Windows consoles
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
-from rich.progress import Progress, SpinnerColumn, TextColumn
 
-from .config import DEFAULT_MAX_CRAWL_PAGES, DEFAULT_MODEL
-from .crawler import EnterpriseWebCrawler
-from .generator import BrochureGenerator
+current_dir = Path(__file__).resolve().parent
+repo_root = current_dir.parent.parent
+if str(current_dir) not in sys.path:
+    sys.path.insert(0, str(current_dir))
+if str(repo_root) not in sys.path:
+    sys.path.insert(0, str(repo_root))
 
-console = Console()
+try:
+    from .config import DEFAULT_MAX_CRAWL_PAGES, DEFAULT_MODEL
+    from .crawler import EnterpriseWebCrawler
+    from .generator import BrochureGenerator
+except ImportError:
+    from config import DEFAULT_MAX_CRAWL_PAGES, DEFAULT_MODEL
+    from crawler import EnterpriseWebCrawler
+    from generator import BrochureGenerator
+
+console = Console(highlight=False)
 
 
 def display_compression_stats(stats: dict):
@@ -118,15 +138,10 @@ async def run_pipeline(url: str, max_pages: int = DEFAULT_MAX_CRAWL_PAGES, model
     ))
 
     # Phase 1: Dynamic Web Crawling & Link Discovery
+    console.print("[cyan]>> Phase 1: Crawling website with dynamic JS rendering...[/cyan]")
     crawler = EnterpriseWebCrawler()
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        console=console,
-    ) as progress:
-        task1 = progress.add_task("[cyan]Crawling website with dynamic JS rendering...", total=None)
-        crawl_result = await crawler.crawl_site(url, max_pages=max_pages)
-        progress.update(task1, completed=True, description="[green]Crawling & Link Discovery complete!")
+    crawl_result = await crawler.crawl_site(url, max_pages=max_pages)
+    console.print("[green]✓ Crawling & Link Discovery complete![/green]")
 
     console.print(f"\n[bold]Pages Crawled:[/bold] {crawl_result['crawled_pages_count']}")
     if crawl_result["discovered_links"]:
@@ -138,7 +153,7 @@ async def run_pipeline(url: str, max_pages: int = DEFAULT_MAX_CRAWL_PAGES, model
     display_compression_stats(crawl_result["compression_stats"])
 
     # Phase 3: Structured Generation with Instructor & Auto-Correction
-    console.print("\n[cyan]Generating 100% Type-Safe Enterprise Brochure via Instructor...[/cyan]")
+    console.print("\n[cyan]>> Phase 2: Generating 100% Type-Safe Enterprise Brochure via Instructor...[/cyan]")
     generator = BrochureGenerator(model_name=model)
     
     try:

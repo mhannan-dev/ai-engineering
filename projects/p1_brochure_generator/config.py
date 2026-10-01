@@ -12,6 +12,7 @@ load_dotenv()
 DEFAULT_MODEL = os.getenv("LLM_MODEL", "gpt-4o-mini")
 FALLBACK_MODEL = os.getenv("FALLBACK_MODEL", "gpt-3.5-turbo")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", os.getenv("OPENAI_API_BASE", None))
 
 # Crawler settings
 DEFAULT_MAX_CRAWL_PAGES = int(os.getenv("MAX_CRAWL_PAGES", "5"))
