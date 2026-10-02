@@ -23,5 +23,15 @@ htmlcov/
 .vscode/
 .idea/
 
+# Databases & local data
+*.sqlite
+*.sqlite3
+*.db
+
+# Streamlit
+.streamlit/secrets.toml
+
 # Backups from migration
 *.bak
+*.tmp
+

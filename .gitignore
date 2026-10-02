@@ -57,7 +57,36 @@ chroma_db/
 *.sublime-project
 *.sublime-workspace
 
+# Testing & Linting
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+htmlcov/
+.coverage
+.coverage.*
+*.cover
+coverage.xml
+nosetests.xml
+
+# Databases & local data
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Backups & temporary files
+*.bak
+*.tmp
+*.swp
+*.swo
+*~
+
 # Operating System files
 .DS_Store
 Thumbs.db
 desktop.ini
+
