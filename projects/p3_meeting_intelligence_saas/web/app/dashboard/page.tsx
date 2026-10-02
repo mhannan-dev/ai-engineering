@@ -1,244 +1,190 @@
 'use client';
 
-import React, { useState } from 'react';
-import Link from 'next/link';
+import React, { useEffect, useState } from 'react';
+import { getStoredUser, User } from '@/lib/api';
 import {
-  BarChart3,
-  CheckCircle2,
+  Activity,
+  Mic,
+  Calendar,
   Clock,
-  ShieldCheck,
-  Cloud,
+  ListTodo,
+  TrendingUp,
   FileText,
-  PlusCircle,
-  Layers,
-  ArrowUpRight,
-  Filter,
+  UploadCloud,
+  Play
 } from 'lucide-react';
-import { MoMDisplay } from '@/components/mom-display';
-import { ActionItemsTable } from '@/components/action-items-table';
-import { AudioUploader } from '@/components/audio-uploader';
-import { MeetingMinutes, generateMockMeetingMinutes } from '@/lib/api';
-
-const MOCK_HISTORICAL_MEETINGS: MeetingMinutes[] = [
-  generateMockMeetingMinutes('q3_security_architecture.mp3', 'confidential'),
-  {
-    ...generateMockMeetingMinutes('weekly_growth_marketing.mp3', 'public'),
-    id: 'meet-102',
-    meeting_title: 'Global Growth Funnel & Customer Retention Sprint',
-    date: '2026-10-01',
-    transcription_metadata: {
-      engine: 'Cloud Deepgram API',
-      sensitivity: 'public',
-      duration_seconds: 520,
-      confidence_score: 0.991,
-      processed_at: '2026-10-01T15:30:00Z',
-      audio_filename: 'growth_sync_01oct.mp3',
-    },
-  },
-  {
-    ...generateMockMeetingMinutes('executive_board_budget.wav', 'confidential'),
-    id: 'meet-103',
-    meeting_title: 'Executive Financial Allocation & Cloud Cost Audit',
-    date: '2026-09-28',
-    transcription_metadata: {
-      engine: 'faster-whisper (CPU, int8, VAD)',
-      sensitivity: 'confidential',
-      duration_seconds: 840,
-      confidence_score: 0.978,
-      processed_at: '2026-09-28T10:15:00Z',
-      audio_filename: 'budget_review_fin.wav',
-    },
-  },
-];
+import { Button } from '@/components/ui/button';
 
 export default function DashboardPage() {
-  const [meetings, setMeetings] = useState<MeetingMinutes[]>(MOCK_HISTORICAL_MEETINGS);
-  const [selectedMeetingId, setSelectedMeetingId] = useState<string>(MOCK_HISTORICAL_MEETINGS[0].id);
-  const [showUploadModal, setShowUploadModal] = useState<boolean>(false);
+  const [user, setUser] = useState<User | null>(null);
 
-  const activeMeeting = meetings.find((m) => m.id === selectedMeetingId) || meetings[0];
+  // Access is enforced by RequireAuth in app/dashboard/layout.tsx
+  useEffect(() => {
+    setUser(getStoredUser());
+  }, []);
 
-  const handleNewMeeting = (newM: MeetingMinutes) => {
-    setMeetings((prev) => [newM, ...prev]);
-    setSelectedMeetingId(newM.id);
-    setShowUploadModal(false);
-  };
-
-  // Metrics calculations
-  const totalMeetings = meetings.length;
-  const totalActionItems = meetings.reduce((sum, m) => sum + m.action_items.length, 0);
-  const completedActionItems = meetings.reduce(
-    (sum, m) => sum + m.action_items.filter((a) => a.status === 'completed').length,
-    0
-  );
-  const confidentialCount = meetings.filter((m) => m.transcription_metadata.sensitivity === 'confidential').length;
+  if (!user) return null;
 
   return (
-    <div className="container" style={{ padding: '2.5rem 1.5rem 4rem' }}>
-      {/* Dashboard Top Header */}
-      <div
-        style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '1rem',
-          marginBottom: '2rem',
-        }}
-      >
+    <div className="min-h-screen pt-12 pb-24">
+      <div className="container">
+        
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight mb-2">
+              Welcome back, <span className="gradient-text">{user.first_name || 'User'}</span>
+            </h1>
+            <p className="text-slate-400">
+              Here is what's happening with your meeting intelligence today.
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button variant="secondary" className="!px-4">
+              <Calendar size={18} className="text-slate-400" />
+              <span>Schedule</span>
+            </Button>
+            <Button className="wave-ring !px-5 shadow-indigo-500/25">
+              <UploadCloud size={18} />
+              <span>Upload Audio</span>
+            </Button>
+          </div>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <div className="glass-panel p-6 rounded-2xl relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+              <Mic size={120} className="text-indigo-400 -mr-8 -mt-8" />
+            </div>
+            <div className="flex items-center gap-4 mb-4">
+              <div className="p-3 bg-indigo-500/20 text-indigo-400 rounded-xl">
+                <FileText size={22} />
+              </div>
+              <h3 className="font-semibold text-slate-300">Total Meetings</h3>
+            </div>
+            <p className="text-4xl font-bold tracking-tight">14</p>
+            <div className="mt-3 flex items-center gap-1.5 text-emerald-400 text-sm font-medium">
+              <TrendingUp size={16} />
+              <span>+3 this week</span>
+            </div>
+          </div>
+
+          <div className="glass-panel p-6 rounded-2xl relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+              <Clock size={120} className="text-cyan-400 -mr-8 -mt-8" />
+            </div>
+            <div className="flex items-center gap-4 mb-4">
+              <div className="p-3 bg-cyan-500/20 text-cyan-400 rounded-xl">
+                <Activity size={22} />
+              </div>
+              <h3 className="font-semibold text-slate-300">Hours Transcribed</h3>
+            </div>
+            <p className="text-4xl font-bold tracking-tight">8.5<span className="text-xl text-slate-500 ml-1">hrs</span></p>
+            <div className="mt-3 flex items-center gap-1.5 text-slate-400 text-sm font-medium">
+              <span>across all engines</span>
+            </div>
+          </div>
+
+          <div className="glass-panel p-6 rounded-2xl relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+              <ListTodo size={120} className="text-rose-400 -mr-8 -mt-8" />
+            </div>
+            <div className="flex items-center gap-4 mb-4">
+              <div className="p-3 bg-rose-500/20 text-rose-400 rounded-xl">
+                <ListTodo size={22} />
+              </div>
+              <h3 className="font-semibold text-slate-300">Pending Actions</h3>
+            </div>
+            <p className="text-4xl font-bold tracking-tight">6</p>
+            <div className="mt-3 flex items-center gap-1.5 text-rose-400 text-sm font-medium">
+              <span>2 high priority</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Recent Meetings List */}
         <div>
-          <h1 style={{ fontSize: '2rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.35rem' }}>
-            Meeting Intelligence Dashboard
-          </h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.92rem' }}>
-            Real-time telemetry and structured outputs generated by FastAPI hybrid audio engine.
-          </p>
-        </div>
-
-        <button
-          onClick={() => setShowUploadModal(!showUploadModal)}
-          className="btn-primary"
-        >
-          <PlusCircle size={18} />
-          {showUploadModal ? 'Hide Uploader' : 'Ingest Audio'}
-        </button>
-      </div>
-
-      {/* Upload Drawer / Modal */}
-      {showUploadModal && (
-        <div style={{ marginBottom: '2.5rem' }}>
-          <AudioUploader onSuccess={handleNewMeeting} />
-        </div>
-      )}
-
-      {/* KPI Metric Cards */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          gap: '1.25rem',
-          marginBottom: '2.5rem',
-        }}
-      >
-        {/* Metric 1 */}
-        <div className="glass-panel" style={{ padding: '1.25rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-muted)', marginBottom: '0.6rem' }}>
-            <span style={{ fontSize: '0.82rem', fontWeight: 600, textTransform: 'uppercase' }}>Total Meetings</span>
-            <FileText size={18} style={{ color: 'var(--accent-indigo)' }} />
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold tracking-tight">Recent Transcripts</h2>
+            <Button variant="ghost">View All</Button>
           </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: 700 }}>{totalMeetings}</div>
-          <p style={{ fontSize: '0.78rem', color: 'var(--accent-emerald)', marginTop: '0.25rem' }}>
-            100% structured schemas
-          </p>
-        </div>
-
-        {/* Metric 2 */}
-        <div className="glass-panel" style={{ padding: '1.25rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-muted)', marginBottom: '0.6rem' }}>
-            <span style={{ fontSize: '0.82rem', fontWeight: 600, textTransform: 'uppercase' }}>Action Items</span>
-            <CheckCircle2 size={18} style={{ color: 'var(--accent-emerald)' }} />
-          </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: 700 }}>
-            {completedActionItems} <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>/ {totalActionItems}</span>
-          </div>
-          <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-            {Math.round((completedActionItems / (totalActionItems || 1)) * 100)}% completion rate
-          </p>
-        </div>
-
-        {/* Metric 3 */}
-        <div className="glass-panel" style={{ padding: '1.25rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-muted)', marginBottom: '0.6rem' }}>
-            <span style={{ fontSize: '0.82rem', fontWeight: 600, textTransform: 'uppercase' }}>Confidential Local</span>
-            <ShieldCheck size={18} style={{ color: 'var(--accent-emerald)' }} />
-          </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: 700 }}>{confidentialCount}</div>
-          <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-            Faster-Whisper on CPU
-          </p>
-        </div>
-
-        {/* Metric 4 */}
-        <div className="glass-panel" style={{ padding: '1.25rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-muted)', marginBottom: '0.6rem' }}>
-            <span style={{ fontSize: '0.82rem', fontWeight: 600, textTransform: 'uppercase' }}>Avg Transcription</span>
-            <Clock size={18} style={{ color: 'var(--accent-cyan)' }} />
-          </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: 700 }}>4.8s</div>
-          <p style={{ fontSize: '0.78rem', color: 'var(--accent-cyan)', marginTop: '0.25rem' }}>
-            Sub-realtime int8 speed
-          </p>
-        </div>
-      </div>
-
-      {/* Main Content Layout: Sidebar Meetings List + Active Meeting MoM */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'minmax(280px, 340px) 1fr',
-          gap: '1.75rem',
-          alignItems: 'start',
-        }}
-      >
-        {/* Left Column: Meeting History List */}
-        <div className="glass-panel" style={{ padding: '1.25rem' }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1rem' }}>
-            Session Archives
-          </h3>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {meetings.map((m) => {
-              const isSelected = m.id === selectedMeetingId;
-              const isConf = m.transcription_metadata.sensitivity === 'confidential';
-
-              return (
-                <div
-                  key={m.id}
-                  onClick={() => setSelectedMeetingId(m.id)}
-                  style={{
-                    padding: '0.85rem',
-                    borderRadius: 'var(--radius-md)',
-                    border: `1px solid ${isSelected ? 'var(--accent-indigo)' : 'var(--border-subtle)'}`,
-                    background: isSelected ? 'rgba(99, 102, 241, 0.12)' : 'rgba(255, 255, 255, 0.02)',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
-                    <span className={`badge ${isConf ? 'badge-confidential' : 'badge-public'}`}>
-                      {m.transcription_metadata.sensitivity}
+          
+          <div className="glass-panel rounded-2xl overflow-hidden divide-y divide-white/5 border-white/10">
+            {/* Demo Item 1 */}
+            <div className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-white/[0.02] transition-colors">
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-indigo-500/20 text-indigo-400 rounded-xl shrink-0 mt-1">
+                  <Play size={20} className="ml-0.5" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-lg mb-1">Q3 Strategic Product Roadmap & Security</h4>
+                  <div className="flex flex-wrap items-center gap-3 text-sm text-slate-400">
+                    <span className="flex items-center gap-1.5">
+                      <Calendar size={14} /> Oct 02, 2026
                     </span>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{m.date}</span>
-                  </div>
-
-                  <p
-                    style={{
-                      fontSize: '0.9rem',
-                      fontWeight: 600,
-                      color: isSelected ? 'var(--text-primary)' : 'var(--text-secondary)',
-                      lineHeight: 1.35,
-                      marginBottom: '0.35rem',
-                    }}
-                  >
-                    {m.meeting_title}
-                  </p>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                    <span>{m.action_items.length} tasks</span>
-                    <span>•</span>
-                    <span>{Math.floor(m.transcription_metadata.duration_seconds / 60)} min audio</span>
+                    <span className="flex items-center gap-1.5">
+                      <Clock size={14} /> 45 mins
+                    </span>
                   </div>
                 </div>
-              );
-            })}
+              </div>
+              <div className="flex items-center gap-3 md:flex-col md:items-end">
+                <span className="badge badge-confidential">Confidential</span>
+                <span className="text-xs text-slate-500 font-mono">Faster-Whisper (CPU)</span>
+              </div>
+            </div>
+
+            {/* Demo Item 2 */}
+            <div className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-white/[0.02] transition-colors">
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-cyan-500/20 text-cyan-400 rounded-xl shrink-0 mt-1">
+                  <Play size={20} className="ml-0.5" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-lg mb-1">Weekly Cross-Functional Growth Sync</h4>
+                  <div className="flex flex-wrap items-center gap-3 text-sm text-slate-400">
+                    <span className="flex items-center gap-1.5">
+                      <Calendar size={14} /> Sep 28, 2026
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <Clock size={14} /> 28 mins
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 md:flex-col md:items-end">
+                <span className="badge badge-public">Public</span>
+                <span className="text-xs text-slate-500 font-mono">Cloud Deepgram API</span>
+              </div>
+            </div>
+            
+            {/* Demo Item 3 */}
+            <div className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-white/[0.02] transition-colors">
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-emerald-500/20 text-emerald-400 rounded-xl shrink-0 mt-1">
+                  <Play size={20} className="ml-0.5" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-lg mb-1">Engineering Architecture Standup</h4>
+                  <div className="flex flex-wrap items-center gap-3 text-sm text-slate-400">
+                    <span className="flex items-center gap-1.5">
+                      <Calendar size={14} /> Sep 25, 2026
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <Clock size={14} /> 15 mins
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 md:flex-col md:items-end">
+                <span className="badge badge-confidential">Confidential</span>
+                <span className="text-xs text-slate-500 font-mono">Faster-Whisper (CPU)</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Right Column: Selected Meeting Minutes & Action Items */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-          <MoMDisplay minutes={activeMeeting} />
-          <ActionItemsTable initialItems={activeMeeting.action_items} />
-        </div>
       </div>
     </div>
   );

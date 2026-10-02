@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Waves, Sparkles, Activity, ShieldCheck } from 'lucide-react';
+import { Navbar } from '@/components/navbar';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -17,62 +17,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        {/* Navigation Bar */}
-        <header className="navbar">
-          <div className="container">
-            <div className="navbar-inner">
-              <Link href="/" className="nav-logo">
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '10px',
-                    background: 'var(--gradient-brand)',
-                    color: '#ffffff',
-                    boxShadow: '0 0 16px rgba(99, 102, 241, 0.4)',
-                  }}
-                >
-                  <Waves size={20} />
-                </div>
-                <span>
-                  Meeting<span className="gradient-text">Intel</span>.ai
-                </span>
-              </Link>
-
-              <nav className="nav-links">
-                <Link href="/">Home</Link>
-                <Link href="/dashboard">Dashboard</Link>
-                <div
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.4rem',
-                    fontSize: '0.8rem',
-                    padding: '0.3rem 0.75rem',
-                    borderRadius: 'var(--radius-full)',
-                    background: 'rgba(16, 185, 129, 0.1)',
-                    border: '1px solid rgba(16, 185, 129, 0.25)',
-                    color: 'var(--accent-emerald)',
-                  }}
-                >
-                  <span
-                    style={{
-                      width: '6px',
-                      height: '6px',
-                      borderRadius: '50%',
-                      background: 'var(--accent-emerald)',
-                      display: 'inline-block',
-                    }}
-                  />
-                  Backend: Ready
-                </div>
-              </nav>
-            </div>
-          </div>
-        </header>
+        {/* Navigation Bar & Auth Modal */}
+        <Navbar />
 
         {/* Main Application Body */}
         <main style={{ flex: 1 }}>{children}</main>

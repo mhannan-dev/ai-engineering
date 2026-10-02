@@ -91,7 +91,31 @@ p3_meeting_intelligence_saas/
 
 ---
 
-## 🚀 Getting Started
+### ⚡ One-Click Runner (`run.ps1`)
+
+You can launch and manage the entire application using the provided PowerShell script:
+
+```powershell
+# Run both Backend & Frontend in THIS SINGLE terminal (Ctrl+C terminates both)
+.\run.ps1
+
+# Run only the FastAPI backend (foreground)
+.\run.ps1 -Backend
+
+# Run only the Next.js frontend (foreground)
+.\run.ps1 -Web
+
+# Run backend unit & integration tests
+.\run.ps1 -Test
+
+# Stop any running instances on ports 8000/3000
+.\run.ps1 -Stop
+
+# Install/sync dependencies for both backend and frontend
+.\run.ps1 -Install
+```
+
+---
 
 ### 1. Backend Setup (`api/`)
 

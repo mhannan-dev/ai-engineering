@@ -12,6 +12,9 @@ class User:
     email: str
     hashed_password: str
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    full_name: str = ""
+    first_name: str = ""
+    last_name: str | None = None
+    avatar: str | None = None
+    subscription_tier: str = "free"
     is_active: bool = True
     created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
