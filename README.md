@@ -93,10 +93,22 @@ Every run automatically outputs three production-ready artifacts in `projects/p1
 ## ✈️ Project 2: Airline Multi-Agent System
 
 ### 📌 Overview
-An enterprise customer support multi-agent architecture handling seat changes, flight cancellations, baggage queries, and customer policy resolution with structured tool calling and stateful conversation recovery.
+An enterprise customer support multi-modal agent architecture handling boarding pass parsing, flight lookups, deterministic refund calculations, and 2FA-gated cancellations with structured tool calling and an interactive Streamlit UI.
 
 ### 💻 How to Run
-*(Instructions and modules will be documented here as implementation progresses in `projects/p2_airline_agent/`).*
+
+#### Method A: From the Root Directory (Recommended)
+```powershell
+python -m streamlit run projects/p2_airline_agent/airline_main_agent.py
+```
+
+#### Method B: From the Project Subdirectory
+```powershell
+cd projects/p2_airline_agent
+streamlit run airline_main_agent.py
+```
+
+👉 Detailed architectural documentation & test scenarios: [projects/p2_airline_agent/README.MD](file:///e:/DockerProjects/saaa_rag_product/ai-engineering/projects/p2_airline_agent/README.MD)
 
 ---
 
