@@ -21,9 +21,10 @@ interface MoMDisplayProps {
 
 export function MoMDisplay({ minutes }: MoMDisplayProps) {
   const [copied, setCopied] = useState(false);
+  const [copiedTranscript, setCopiedTranscript] = useState(false);
 
   const copyMarkdown = () => {
-    const md = `
+    let md = `
 # ${minutes.meeting_title}
 **Date:** ${minutes.date}  
 **Engine:** ${minutes.transcription_metadata.engine}  
@@ -42,12 +43,16 @@ ${minutes.decisions_made.map((dec) => `- [x] ${dec}`).join('\n')}
 | Task | Assignee | Due Date | Priority | Status |
 |------|----------|----------|----------|--------|
 ${minutes.action_items
-  .map(
-    (item) =>
-      `| ${item.task} | ${item.assignee} | ${item.due_date} | ${item.priority} | ${item.status} |`
-  )
-  .join('\n')}
+        .map(
+          (item) =>
+            `| ${item.task} | ${item.assignee} | ${item.due_date} | ${item.priority} | ${item.status} |`
+        )
+        .join('\n')}
     `.trim();
+
+    if (minutes.transcription_metadata?.raw_transcript) {
+      md += `\n\n## Raw Transcription\n${minutes.transcription_metadata.raw_transcript}\n`;
+    }
 
     navigator.clipboard.writeText(md);
     setCopied(true);
@@ -82,11 +87,10 @@ ${minutes.action_items
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem' }}>
             <span
-              className={`badge ${
-                minutes.transcription_metadata.sensitivity === 'confidential'
+              className={`badge ${minutes.transcription_metadata.sensitivity === 'confidential'
                   ? 'badge-confidential'
                   : 'badge-public'
-              }`}
+                }`}
             >
               {minutes.transcription_metadata.sensitivity}
             </span>
@@ -226,6 +230,73 @@ ${minutes.action_items
           </div>
         </div>
       </div>
+
+      {/* Raw Audio Transcription Section */}
+      {minutes.transcription_metadata?.raw_transcript && (
+        <div
+          style={{
+            marginTop: '2rem',
+            padding: '1.25rem 1.5rem',
+            borderRadius: 'var(--radius-md)',
+            background: 'rgba(30, 41, 59, 0.35)',
+            border: '1px solid var(--border-subtle)',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '0.85rem',
+              flexWrap: 'wrap',
+              gap: '0.5rem',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+              <FileText size={18} style={{ color: 'var(--accent-cyan)' }} />
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 600 }}>Raw Audio Transcription</h3>
+              <span
+                className="badge badge-confidential"
+                style={{ fontSize: '0.72rem', padding: '0.15rem 0.5rem' }}
+              >
+                {minutes.transcription_metadata.raw_transcript.trim().split(/\s+/).filter(Boolean).length} words
+              </span>
+            </div>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(minutes.transcription_metadata.raw_transcript || '');
+                setCopiedTranscript(true);
+                setTimeout(() => setCopiedTranscript(false), 2000);
+              }}
+              className="btn-secondary"
+              style={{ padding: '0.35rem 0.65rem', fontSize: '0.8rem' }}
+            >
+              {copiedTranscript ? (
+                <Check size={14} style={{ color: 'var(--accent-emerald)' }} />
+              ) : (
+                <Copy size={14} />
+              )}
+              {copiedTranscript ? 'Copied!' : 'Copy Transcript'}
+            </button>
+          </div>
+          <div
+            style={{
+              maxHeight: '260px',
+              overflowY: 'auto',
+              padding: '1rem',
+              borderRadius: 'var(--radius-sm)',
+              background: 'rgba(15, 23, 42, 0.6)',
+              border: '1px solid rgba(255, 255, 255, 0.05)',
+              fontSize: '0.9rem',
+              lineHeight: 1.7,
+              color: '#e2e8f0',
+              whiteSpace: 'pre-wrap',
+            }}
+          >
+            {minutes.transcription_metadata.raw_transcript}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

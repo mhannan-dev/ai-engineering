@@ -4,13 +4,14 @@ from collections.abc import Generator
 from dataclasses import asdict
 from datetime import datetime
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy import create_engine, event
+from sqlalchemy.orm import Session, sessionmaker
 
 from meeting_intelligence.config import get_settings
 from meeting_intelligence.db.base import BaseRepository
-from meeting_intelligence.db.models import UserModel, MeetingModel
-from meeting_intelligence.models.meeting import Meeting, ActionItemRecord, TranscriptionRecord
+from meeting_intelligence.db.models import MeetingModel, UploadModel, UserModel
+from meeting_intelligence.models.meeting import ActionItemRecord, Meeting, TranscriptionRecord
+from meeting_intelligence.models.upload import Upload
 from meeting_intelligence.models.user import User
 
 settings = get_settings()
@@ -24,6 +25,12 @@ engine = create_engine(
     pool_recycle=3600,
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+if _is_sqlite:
+    # SQLite ignores foreign keys (e.g. uploads ON DELETE CASCADE) unless enabled per connection
+    @event.listens_for(engine, "connect")
+    def _enable_sqlite_foreign_keys(dbapi_connection, _):
+        dbapi_connection.execute("PRAGMA foreign_keys=ON")
 
 # Schema is managed by Alembic: run `uv run alembic upgrade head`
 
@@ -42,7 +49,7 @@ class UserRepository(BaseRepository[User]):
             hashed_password=model.hashed_password,
             first_name=model.first_name,
             last_name=model.last_name,
-            avatar=model.avatar,
+            avatar=f"/uploads/{model.avatar_upload.stored_path}" if model.avatar_upload else None,
             subscription_tier=model.subscription_tier,
             is_active=model.is_active,
             created_at=model.created_at,
@@ -67,7 +74,6 @@ class UserRepository(BaseRepository[User]):
             hashed_password=item.hashed_password,
             first_name=item.first_name,
             last_name=item.last_name,
-            avatar=item.avatar,
             subscription_tier=item.subscription_tier,
             is_active=item.is_active,
             created_at=item.created_at,
@@ -76,15 +82,6 @@ class UserRepository(BaseRepository[User]):
         self._db.commit()
         self._db.refresh(model)
         return item
-
-    def update_avatar(self, item_id: str, avatar: str | None) -> User | None:
-        model = self._db.query(UserModel).filter(UserModel.id == item_id).first()
-        if not model:
-            return None
-        model.avatar = avatar
-        self._db.commit()
-        self._db.refresh(model)
-        return self._to_domain(model)
 
     def update(self, item_id: str, first_name: str | None = None, last_name: str | None = None) -> User | None:
         model = self._db.query(UserModel).filter(UserModel.id == item_id).first()
@@ -116,7 +113,7 @@ class MeetingRepository(BaseRepository[Meeting]):
     def _to_domain(self, model: MeetingModel | None) -> Meeting | None:
         if not model:
             return None
-            
+
         action_items = [ActionItemRecord(**ai) for ai in model.action_items] if model.action_items else []
         transcription = None
         if model.transcription:
@@ -124,7 +121,7 @@ class MeetingRepository(BaseRepository[Meeting]):
             if "processed_at" in t_dict and isinstance(t_dict["processed_at"], str):
                 t_dict["processed_at"] = datetime.fromisoformat(t_dict["processed_at"])
             transcription = TranscriptionRecord(**t_dict)
-        
+
         return Meeting(
             id=model.id,
             title=model.title,
@@ -146,13 +143,20 @@ class MeetingRepository(BaseRepository[Meeting]):
         models = self._db.query(MeetingModel).order_by(MeetingModel.created_at.desc()).all()
         return [self._to_domain(m) for m in models]
 
-    def list_by_user(self, user_id: str) -> list[Meeting]:
-        models = self._db.query(MeetingModel).filter(MeetingModel.user_id == user_id).order_by(MeetingModel.created_at.desc()).all()
+    def list_by_user(self, user_id: str, limit: int = 50, offset: int = 0) -> list[Meeting]:
+        models = (
+            self._db.query(MeetingModel)
+            .filter(MeetingModel.user_id == user_id)
+            .order_by(MeetingModel.created_at.desc(), MeetingModel.id)
+            .offset(offset)
+            .limit(limit)
+            .all()
+        )
         return [self._to_domain(m) for m in models]
 
     def create(self, item: Meeting) -> Meeting:
         action_items = [asdict(ai) for ai in item.action_items] if item.action_items else []
-        
+
         transcription_dict = None
         if item.transcription:
             transcription_dict = asdict(item.transcription)
@@ -185,6 +189,65 @@ class MeetingRepository(BaseRepository[Meeting]):
         return False
 
 
+class UploadRepository(BaseRepository[Upload]):
+    """Repository managing stored-file metadata (the uploads table)."""
+
+    def __init__(self, db: Session):
+        self._db = db
+
+    def _to_domain(self, model: UploadModel | None) -> Upload | None:
+        if not model:
+            return None
+        return Upload(
+            id=model.id,
+            user_id=model.user_id,
+            category=model.category,
+            original_filename=model.original_filename,
+            stored_path=model.stored_path,
+            content_type=model.content_type,
+            size_bytes=model.size_bytes,
+            created_at=model.created_at,
+        )
+
+    def get_by_id(self, item_id: str) -> Upload | None:
+        model = self._db.query(UploadModel).filter(UploadModel.id == item_id).first()
+        return self._to_domain(model)
+
+    def list_all(self) -> list[Upload]:
+        models = self._db.query(UploadModel).order_by(UploadModel.created_at.desc()).all()
+        return [self._to_domain(m) for m in models]
+
+    def list_for_user(self, user_id: str, category: str | None = None) -> list[Upload]:
+        query = self._db.query(UploadModel).filter(UploadModel.user_id == user_id)
+        if category:
+            query = query.filter(UploadModel.category == category)
+        return [self._to_domain(m) for m in query.order_by(UploadModel.created_at.desc()).all()]
+
+    def create(self, item: Upload) -> Upload:
+        self._db.add(
+            UploadModel(
+                id=item.id,
+                user_id=item.user_id,
+                category=item.category,
+                original_filename=item.original_filename,
+                stored_path=item.stored_path,
+                content_type=item.content_type,
+                size_bytes=item.size_bytes,
+                created_at=item.created_at,
+            )
+        )
+        self._db.commit()
+        return item
+
+    def delete(self, item_id: str) -> bool:
+        model = self._db.query(UploadModel).filter(UploadModel.id == item_id).first()
+        if model:
+            self._db.delete(model)
+            self._db.commit()
+            return True
+        return False
+
+
 class DatabaseSession:
     """Session container exposing domain repositories."""
 
@@ -192,11 +255,7 @@ class DatabaseSession:
         self._db = db
         self.users = UserRepository(self._db)
         self.meetings = MeetingRepository(self._db)
-
-    @classmethod
-    def reset(cls) -> None:
-        """Clear all stored data (useful for test isolation)."""
-        pass
+        self.uploads = UploadRepository(self._db)
 
 
 def get_db() -> Generator[DatabaseSession, None, None]:

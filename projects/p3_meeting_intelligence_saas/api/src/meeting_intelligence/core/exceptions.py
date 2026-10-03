@@ -3,6 +3,7 @@
 from typing import Any
 
 from fastapi import FastAPI, Request, status
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 
@@ -68,4 +69,18 @@ def register_exception_handlers(app: FastAPI) -> None:
                 "message": exc.message,
                 "details": exc.details,
             },
+        )
+
+    @app.exception_handler(RequestValidationError)
+    async def validation_exception_handler(_: Request, exc: RequestValidationError) -> JSONResponse:
+        # Same shape as AppException instead of FastAPI's default {"detail": [...]}
+        errors = [
+            {"field": ".".join(str(p) for p in e["loc"] if p != "body"), "message": e["msg"]}
+            for e in exc.errors()
+        ]
+        first = errors[0] if errors else {"field": "", "message": "Invalid request."}
+        message = f"{first['field']}: {first['message']}" if first["field"] else first["message"]
+        return JSONResponse(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            content={"error": "ValidationError", "message": message, "details": {"errors": errors}},
         )

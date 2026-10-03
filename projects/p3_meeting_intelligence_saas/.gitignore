@@ -12,7 +12,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+/lib/
 lib64/
 parts/
 sdist/
@@ -21,6 +21,8 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+!web/lib/
+!web/lib/**
 
 # Virtual Environments
 .venv/
@@ -45,7 +47,8 @@ htmlcov/
 
 # Audio Uploads & Temporary Processing Files
 api/temp/
-api/uploads/
+api/uploads/*
+!api/uploads/.gitkeep
 *.tmp
 *.bak
 

@@ -48,6 +48,8 @@ class TranscriptionMetadataSchema(BaseModel):
     confidence_score: float | None = Field(default=None, description="Average confidence score.")
     processed_at: str = Field(description="ISO timestamp of processing.")
     audio_filename: str = Field(description="Original uploaded audio filename.")
+    raw_transcript: str = Field(default="", description="Full speech-to-text transcript text.")
+
 
 
 class MeetingMinutesSchema(BaseModel):

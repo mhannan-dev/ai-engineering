@@ -18,6 +18,7 @@ import {
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { User, getStoredUser, getAvatarUrl, uploadAvatar, removeAvatar, updateProfile } from '@/lib/api';
+import { AvatarCropperModal } from './avatar-cropper-modal';
 
 // Allowed uploads (the API re-checks the real format and converts to WebP)
 const AVATAR_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -46,6 +47,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [isAvatarBusy, setIsAvatarBusy] = useState(false);
+  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
 
   const [isLoading, setIsLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -104,17 +106,29 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       return;
     }
 
-    setAvatarPreview(URL.createObjectURL(file));
+    setCropImageSrc(URL.createObjectURL(file));
+  };
+
+  const handleCropCompleteAction = async (croppedBlob: Blob) => {
+    setErrorMsg(null);
+    setSuccessMsg(null);
     setIsAvatarBusy(true);
+    
     try {
+      // Convert blob to File so our API client can append it
+      const file = new File([croppedBlob], 'avatar.webp', { type: 'image/webp' });
+      
       const user = await uploadAvatar(file);
       setCurrentUser(user);
       setSuccessMsg('Avatar updated successfully.');
+      
+      // Clear the main preview if any, let it fallback to the server avatar URL
+      setAvatarPreview(null);
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Could not upload avatar.');
     } finally {
-      setAvatarPreview(null);
       setIsAvatarBusy(false);
+      setCropImageSrc(null);
     }
   };
 
@@ -403,6 +417,13 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           </form>
         )}
       </div>
+
+      <AvatarCropperModal
+        isOpen={!!cropImageSrc}
+        imageSrc={cropImageSrc || ''}
+        onClose={() => setCropImageSrc(null)}
+        onCropCompleteAction={handleCropCompleteAction}
+      />
     </div>
   );
 }

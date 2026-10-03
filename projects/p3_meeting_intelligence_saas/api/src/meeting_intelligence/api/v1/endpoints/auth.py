@@ -15,7 +15,7 @@ router = APIRouter()
     summary="User login",
     description="Authenticate with email and password to receive a bearer token.",
 )
-async def login(
+def login(
     payload: UserLogin,
     user_service: UserServiceDep,
     settings: SettingsDep,

@@ -14,6 +14,7 @@ class User:
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
     first_name: str = ""
     last_name: str | None = None
+    # Read-only: URL of the user's avatar, resolved from the uploads table
     avatar: str | None = None
     subscription_tier: str = "free"
     is_active: bool = True

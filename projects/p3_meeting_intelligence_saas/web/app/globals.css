@@ -67,12 +67,19 @@
   html,
   body {
     max-width: 100vw;
-    overflow-x: hidden;
+    overflow-x: clip;
     background-color: var(--bg-primary);
     color: var(--text-primary);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Smooth in-page jumps (e.g. #upload-section), unless the user prefers reduced motion */
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
   }
 
   body {
@@ -264,11 +271,11 @@
     border-radius: inherit;
     pointer-events: none;
     z-index: -1;
-    animation: wave-ring 3s cubic-bezier(0.33, 0, 0.2, 1) infinite;
+    animation: wave-ring 10s cubic-bezier(0.33, 0, 0.2, 1) infinite;
   }
 
   .wave-ring::after {
-    animation-delay: 1.5s;
+    animation-delay: 5s; /* half the duration, so the two waves stay evenly spaced */
   }
 
   @media (prefers-reduced-motion: reduce) {

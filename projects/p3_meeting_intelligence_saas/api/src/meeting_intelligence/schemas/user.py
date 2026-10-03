@@ -12,7 +12,6 @@ class UserCreate(BaseModel):
     password: str = Field(min_length=8, description="User password (min 8 chars).")
     first_name: str = Field(description="User first name.")
     last_name: str | None = Field(default=None, description="User last name.")
-    avatar: str | None = Field(default=None, description="User avatar URL.")
     subscription_tier: str | None = Field(default="free", description="Subscription tier.")
 
 

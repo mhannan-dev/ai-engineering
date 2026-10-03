@@ -1,6 +1,5 @@
 """User management business logic service."""
 
-import uuid
 from io import BytesIO
 from pathlib import Path
 
@@ -9,8 +8,10 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 from meeting_intelligence.core.exceptions import AppException, NotFoundError, UnauthorizedError
 from meeting_intelligence.core.security import hash_password, verify_password
 from meeting_intelligence.db.session import DatabaseSession
+from meeting_intelligence.models.upload import UploadCategory
 from meeting_intelligence.models.user import User
 from meeting_intelligence.schemas.user import UserCreate
+from meeting_intelligence.services.upload_service import UploadService
 
 
 class UserService:
@@ -31,7 +32,6 @@ class UserService:
             hashed_password=hashed,
             first_name=payload.first_name,
             last_name=payload.last_name,
-            avatar=payload.avatar,
             subscription_tier=payload.subscription_tier or "free",
         )
         return self.db.users.create(user)
@@ -63,8 +63,15 @@ class UserService:
             raise NotFoundError(f"User with ID {user_id} was not found.")
         return updated
 
-    def update_avatar(self, user: User, content: bytes, upload_dir: Path, max_bytes: int) -> User:
-        """Validate and store an avatar image, replacing any previous one."""
+    def update_avatar(
+        self,
+        user: User,
+        content: bytes,
+        upload_dir: Path,
+        max_bytes: int,
+        original_filename: str | None = None,
+    ) -> User:
+        """Validate, convert and store an avatar image (uploads table), replacing any previous one."""
         if not content:
             raise AppException("Uploaded image is empty.")
         if len(content) > max_bytes:
@@ -75,36 +82,30 @@ class UserService:
 
         webp = _convert_to_webp(content)
 
-        avatar_dir = upload_dir / AVATAR_SUBDIR
-        avatar_dir.mkdir(parents=True, exist_ok=True)
-        filename = f"{user.id}-{uuid.uuid4().hex[:12]}.webp"
-        (avatar_dir / filename).write_bytes(webp)
+        uploads = UploadService(self.db, upload_dir)
+        previous = self.db.uploads.list_for_user(user.id, UploadCategory.AVATAR)
+        # Save the new avatar before deleting old ones, so a failure never leaves the user without one
+        uploads.save(
+            user_id=user.id,
+            category=UploadCategory.AVATAR,
+            content=webp,
+            extension="webp",
+            content_type="image/webp",
+            original_filename=original_filename,
+        )
+        for old in previous:
+            uploads.delete(old)
 
-        self._remove_avatar_file(user.avatar, upload_dir)
-        updated = self.db.users.update_avatar(user.id, f"/uploads/{AVATAR_SUBDIR}/{filename}")
-        if not updated:
-            raise NotFoundError(f"User with ID {user.id} was not found.")
-        return updated
+        return self.get_by_id(user.id)
 
     def remove_avatar(self, user: User, upload_dir: Path) -> User:
-        """Delete the user's avatar image and clear the reference."""
-        self._remove_avatar_file(user.avatar, upload_dir)
-        updated = self.db.users.update_avatar(user.id, None)
-        if not updated:
-            raise NotFoundError(f"User with ID {user.id} was not found.")
-        return updated
-
-    @staticmethod
-    def _remove_avatar_file(avatar: str | None, upload_dir: Path) -> None:
-        """Delete a previously stored avatar file (only ones we manage)."""
-        prefix = f"/uploads/{AVATAR_SUBDIR}/"
-        if not avatar or not avatar.startswith(prefix):
-            return
-        path = upload_dir / AVATAR_SUBDIR / Path(avatar[len(prefix):]).name
-        path.unlink(missing_ok=True)
+        """Delete the user's avatar file(s) and their uploads records."""
+        uploads = UploadService(self.db, upload_dir)
+        for old in self.db.uploads.list_for_user(user.id, UploadCategory.AVATAR):
+            uploads.delete(old)
+        return self.get_by_id(user.id)
 
 
-AVATAR_SUBDIR = "avatars"
 # Detected from file contents, not the filename/content-type
 AVATAR_ALLOWED_FORMATS = ("JPEG", "PNG", "WEBP")
 AVATAR_MAX_DIMENSION = 512  # px; avatars are displayed small, so downscale large photos

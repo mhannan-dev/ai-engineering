@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
   ArrowRight,
@@ -19,6 +19,16 @@ import { MeetingMinutes, generateMockMeetingMinutes } from '@/lib/api';
 
 export default function HomePage() {
   const [currentResult, setCurrentResult] = useState<MeetingMinutes | null>(null);
+
+  // Arriving from another page with /#upload-section (e.g. dashboard "Upload Audio"):
+  // scroll once the page has rendered, since client navigation may not do it reliably
+  useEffect(() => {
+    if (window.location.hash !== '#upload-section') return;
+    const frame = requestAnimationFrame(() =>
+      document.getElementById('upload-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    );
+    return () => cancelAnimationFrame(frame);
+  }, []);
 
   const loadSampleData = () => {
     const sample = generateMockMeetingMinutes('quarterly_strategic_sync.mp3', 'confidential');
@@ -184,7 +194,8 @@ export default function HomePage() {
       </section>
 
       {/* Main Upload & Results Section */}
-      <section id="upload-section">
+      {/* scrollMarginTop keeps the section clear of the sticky navbar when jumped to */}
+      <section id="upload-section" style={{ scrollMarginTop: '5.5rem' }}>
         <div className="container">
           <div style={{ maxWidth: '960px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
             {/* Audio Uploader Component */}

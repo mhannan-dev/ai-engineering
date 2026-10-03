@@ -2,10 +2,8 @@ import sys
 from logging.config import fileConfig
 from pathlib import Path
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
-
 from alembic import context
+from sqlalchemy import engine_from_config, pool
 
 # Make the src/ package importable when running `alembic` from the api/ folder
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
@@ -22,8 +20,10 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Database URL comes from DATABASE_URL (.env), same as the app ('%' escaped for configparser)
-config.set_main_option("sqlalchemy.url", get_settings().DATABASE_URL.replace("%", "%%"))
+# Database URL comes from DATABASE_URL (.env), same as the app ('%' escaped for configparser).
+# Programmatic callers (e.g. tests) may pass config.attributes["database_url"] instead.
+_url = config.attributes.get("database_url") or get_settings().DATABASE_URL
+config.set_main_option("sqlalchemy.url", _url.replace("%", "%%"))
 
 target_metadata = Base.metadata
 

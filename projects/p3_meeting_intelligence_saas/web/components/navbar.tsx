@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Waves, LogIn, LogOut, User as UserIcon, Settings } from 'lucide-react';
 import { LoginModal } from '@/components/login-modal';
 import { SettingsModal } from '@/components/settings-modal';
 import { LogoutModal } from '@/components/logout-modal';
-import { getStoredUser, clearAuth, getAvatarUrl, User } from '@/lib/api';
+import { getStoredUser, clearAuth, getAvatarUrl, validateSession, User } from '@/lib/api';
 
 export function Navbar() {
   const router = useRouter();
@@ -25,6 +25,11 @@ export function Navbar() {
     };
 
     window.addEventListener('auth_state_changed', handleAuthChange);
+
+    // Verify the stored token with the API: clears expired/invalid sessions and
+    // refreshes the cached profile (fires auth_state_changed either way)
+    validateSession();
+
     return () => window.removeEventListener('auth_state_changed', handleAuthChange);
   }, []);
 
@@ -62,6 +67,7 @@ export function Navbar() {
 
             <nav className="nav-links">
               <Link href="/">Home</Link>
+              {currentUser && <Link href="/dashboard">Dashboard</Link>}
 
               {currentUser ? (
                 <div
@@ -187,7 +193,6 @@ export function Navbar() {
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
       />
-
       {/* Logout Confirmation Modal */}
       <LogoutModal
         isOpen={isLogoutOpen}

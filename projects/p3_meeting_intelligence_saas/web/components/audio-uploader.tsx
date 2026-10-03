@@ -21,6 +21,7 @@ export function AudioUploader({ onSuccess }: AudioUploaderProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [sensitivity, setSensitivity] = useState<SensitivityLevel>('confidential');
+  const [language, setLanguage] = useState<string>('auto');
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [progressStage, setProgressStage] = useState<string>('');
@@ -87,6 +88,7 @@ export function AudioUploader({ onSuccess }: AudioUploaderProps) {
       const result = await uploadAndProcessAudio(
         selectedFile,
         sensitivity,
+        language,
         (stage) => setProgressStage(stage)
       );
       onSuccess(result);
@@ -111,7 +113,7 @@ export function AudioUploader({ onSuccess }: AudioUploaderProps) {
       </div>
 
       {/* Sensitivity Selector Switch */}
-      <div style={{ marginBottom: '1.75rem' }}>
+      <div style={{ marginBottom: '1.5rem' }}>
         <label
           style={{
             display: 'block',
@@ -123,7 +125,7 @@ export function AudioUploader({ onSuccess }: AudioUploaderProps) {
             marginBottom: '0.75rem',
           }}
         >
-          Select Data Sensitivity Flag
+          1. Select Processing Engine & Privacy Flag
         </label>
         <div
           style={{
@@ -138,9 +140,8 @@ export function AudioUploader({ onSuccess }: AudioUploaderProps) {
             style={{
               padding: '1rem',
               borderRadius: 'var(--radius-md)',
-              border: `2px solid ${
-                sensitivity === 'confidential' ? 'var(--accent-emerald)' : 'var(--border-subtle)'
-              }`,
+              border: `2px solid ${sensitivity === 'confidential' ? 'var(--accent-emerald)' : 'var(--border-subtle)'
+                }`,
               background:
                 sensitivity === 'confidential'
                   ? 'rgba(16, 185, 129, 0.08)'
@@ -174,9 +175,8 @@ export function AudioUploader({ onSuccess }: AudioUploaderProps) {
             style={{
               padding: '1rem',
               borderRadius: 'var(--radius-md)',
-              border: `2px solid ${
-                sensitivity === 'public' ? 'var(--accent-blue)' : 'var(--border-subtle)'
-              }`,
+              border: `2px solid ${sensitivity === 'public' ? 'var(--accent-blue)' : 'var(--border-subtle)'
+                }`,
               background:
                 sensitivity === 'public'
                   ? 'rgba(59, 130, 246, 0.08)'
@@ -203,6 +203,67 @@ export function AudioUploader({ onSuccess }: AudioUploaderProps) {
               Routes to <strong>Cloud Deepgram API</strong>. Optimized for high throughput, team syncs, and webinars.
             </p>
           </div>
+        </div>
+      </div>
+
+      {/* Language Selector */}
+      <div style={{ marginBottom: '1.75rem' }}>
+        <label
+          style={{
+            display: 'block',
+            fontSize: '0.82rem',
+            fontWeight: 600,
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            color: 'var(--text-muted)',
+            marginBottom: '0.75rem',
+          }}
+        >
+          2. Select Spoken Language (ভাষার ধরণ)
+        </label>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '0.85rem',
+          }}
+        >
+          {[
+            { id: 'auto', title: 'Auto Detect (স্বয়ংক্রিয়)', desc: 'Smart auto-detection based on audio & filename' },
+            { id: 'bn', title: 'বাংলা (Bengali)', desc: 'সরাসরি বাংলা হরফে (Bengali Script) রূপান্তর' },
+            { id: 'en', title: 'English', desc: 'English transcription & standard minutes' },
+          ].map((item) => (
+            <div
+              key={item.id}
+              onClick={() => setLanguage(item.id)}
+              style={{
+                padding: '0.9rem 1rem',
+                borderRadius: 'var(--radius-md)',
+                border: `2px solid ${language === item.id ? 'var(--accent-indigo)' : 'var(--border-subtle)'
+                  }`,
+                background:
+                  language === item.id
+                    ? 'rgba(99, 102, 241, 0.12)'
+                    : 'rgba(255, 255, 255, 0.02)',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
+                <span style={{ fontWeight: 600, fontSize: '0.9rem', color: language === item.id ? '#fff' : 'var(--text-secondary)' }}>
+                  {item.title}
+                </span>
+                {language === item.id && (
+                  <span className="badge badge-confidential" style={{ fontSize: '0.7rem', padding: '0.1rem 0.4rem' }}>
+                    Selected
+                  </span>
+                )}
+              </div>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.35 }}>
+                {item.desc}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
 

@@ -13,10 +13,12 @@ import {
   UploadCloud,
   Play
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 
 export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
+  const router = useRouter();
 
   // Access is enforced by RequireAuth in app/dashboard/layout.tsx
   useEffect(() => {
@@ -40,11 +42,11 @@ export default function DashboardPage() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="secondary" className="!px-4">
-              <Calendar size={18} className="text-slate-400" />
-              <span>Schedule</span>
-            </Button>
-            <Button className="wave-ring !px-5 shadow-indigo-500/25">
+            {/* Single uploader for the whole app: the home page's #upload-section */}
+            <Button
+              className="wave-ring !px-5 shadow-indigo-500/25"
+              onClick={() => router.push('/#upload-section')}
+            >
               <UploadCloud size={18} />
               <span>Upload Audio</span>
             </Button>

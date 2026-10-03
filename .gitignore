@@ -18,7 +18,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+/lib/
 lib64/
 parts/
 sdist/
@@ -27,6 +27,8 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+!**/web/lib/
+!**/web/lib/**
 
 # Virtual environments
 venv/
@@ -54,8 +56,6 @@ chroma_db/
 # IDE & Editor settings
 .vscode/
 .idea/
-*.sublime-project
-*.sublime-workspace
 
 # Testing & Linting
 .pytest_cache/
@@ -89,4 +89,14 @@ nosetests.xml
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Node.js / Next.js
+node_modules/
+**/node_modules/
+.next/
+**/.next/
+out/
+**/out/
+*.tsbuildinfo
+
 

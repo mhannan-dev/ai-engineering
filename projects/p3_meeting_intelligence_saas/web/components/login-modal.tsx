@@ -54,8 +54,8 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
   if (!isOpen) return null;
 
   const handleFillDemo = () => {
-    setEmail('demo@meetingintel.ai');
-    setPassword('password123');
+    setEmail('test@yopmail.com');
+    setPassword('Test@1234');
     setErrorMsg(null);
   };
 
@@ -248,7 +248,7 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
                 <Sparkles size={14} />
                 <span>Fill Demo Credentials</span>
               </Button>
-              <span className="text-slate-500">demo / password123</span>
+              <span className="text-slate-500">test@yopmail.com / Test@1234</span>
             </div>
           )}
 
