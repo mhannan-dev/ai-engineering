@@ -1,0 +1,31 @@
+# ==============================================================================
+# Project 3: Meeting Intelligence SaaS - Backend API (api/)
+# ==============================================================================
+
+# Core Web Framework & Settings
+fastapi[standard]>=0.142.2
+python-multipart>=0.0.32
+pydantic-settings>=2.15.0
+
+# Database, ORM & Migrations
+sqlalchemy>=2.1.2
+alembic>=1.20.0
+pymysql>=1.2.3
+cryptography>=50.0.2
+
+# Audio Processing & Speech-to-Text Transcription
+faster-whisper>=1.2.1
+deepgram-sdk>=7.12.0
+av>=11,<19
+
+# Image Processing (Avatars)
+pillow>=12.3.0
+
+# LLM Orchestration & Structured Output Synthesis
+litellm>=1.103.2
+instructor>=1.17.0
+
+# Development & Automated Testing
+pytest>=9.1.1
+pytest-asyncio>=1.4.0
+ruff>=0.16.10

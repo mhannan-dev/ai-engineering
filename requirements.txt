@@ -1,14 +1,16 @@
-litellm==1.67.5
-instructor==1.3.7
-pydantic>=2.10.0
-chromadb==0.5.5
-rank-bm25==0.2.2
-sentence-transformers==3.0.1
-crawl4ai>=0.4.0
-playwright>=1.49.0
-rich==13.7.1
-python-dotenv==1.0.1
-streamlit>=1.40.0
-pillow>=10.0.0
-openai>=1.50.0
-vllm==0.5.3
+# ==============================================================================
+# AI Engineering Master Requirements Index
+# Each sub-project maintains its own isolated, production-grade requirements.txt.
+# ==============================================================================
+
+# Project 1: Enterprise Brochure Generator (Crawl4AI + Playwright + Instructor + Rich)
+-r projects/p1_brochure_generator/requirements.txt
+
+# Project 2: Multi-Modal Airline Customer Support Agent (Streamlit + Vision OCR + Tool Calling)
+-r projects/p2_airline_agent/requirements.txt
+
+# Project 3: Meeting Intelligence SaaS - Backend API (FastAPI + Faster-Whisper + Deepgram + Instructor)
+-r projects/p3_meeting_intelligence_saas/api/requirements.txt
+
+# Project 4: High-Performance Code Transpiler (FastAPI + C++20 + OpenMP)
+-r projects/p4_code_transpiler/requirements.txt

@@ -1,0 +1,19 @@
+[project]
+name = "code-transpiler"
+version = "0.1.0"
+description = "High-Performance Python-to-C++20 Code Transpiler with Self-Correction & Benchmarking"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi[standard]>=0.115.0",
+    "openai>=3.24.0",
+    "pydantic>=2.10.0",
+    "pydantic-settings>=2.15.0",
+    "python-dotenv>=1.0.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "httpx>=0.28.0",
+]

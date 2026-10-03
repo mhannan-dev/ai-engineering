@@ -1,0 +1,6 @@
+# ==============================================================================
+# Project 3: Meeting Intelligence SaaS
+# Note: Frontend (web/) is managed via npm (package.json)
+# Backend (api/) dependencies are defined below:
+# ==============================================================================
+-r api/requirements.txt
