@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    One-click single-terminal runner and management script for Project 3: Meeting Intelligence SaaS.
+    One-click single-terminal runner and management script for Project 4: High-Performance Code Transpiler.
 
 .DESCRIPTION
     Runs both FastAPI backend and Next.js frontend in a SINGLE terminal window without
@@ -14,9 +14,6 @@
 
 .PARAMETER Install
     Installs and syncs both Python (uv) and Node.js (npm) dependencies.
-
-.PARAMETER Migrate
-    Applies pending database migrations (alembic upgrade head).
 
 .PARAMETER Test
     Runs the backend automated test suite via pytest.
@@ -49,8 +46,6 @@ param (
     [switch]$Web,
 
     [switch]$Install,
-
-    [switch]$Migrate,
 
     [switch]$Test,
 
@@ -126,18 +121,6 @@ if ($Install) {
     }
 
     Write-Host "`n[DONE] All dependencies ready!" -ForegroundColor Green
-    return
-}
-
-# 2b. Database Migration Mode
-if ($Migrate) {
-    Write-Host "[*] Applying database migrations (alembic upgrade head)..." -ForegroundColor Yellow
-    Push-Location $ApiDir
-    try {
-        & uv run alembic upgrade head
-    } finally {
-        Pop-Location
-    }
     return
 }
 

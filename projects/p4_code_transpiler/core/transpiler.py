@@ -8,6 +8,11 @@ from openai import AsyncOpenAI
 from config.settings import settings
 from core.optimizer import extract_cpp_code, inject_openmp_simd_directives
 
+
+class TranspilerUnavailableError(RuntimeError):
+    """Raised when the LLM provider cannot be reached or rejects the request."""
+
+
 TRANSPILER_SYSTEM_PROMPT = """You are an elite High-Performance Computing (HPC) Systems Engineer.
 Your task is to transpile the given numerical Python code into modern, idiomatic, and blazingly fast C++20.
 
@@ -74,58 +79,10 @@ Python Source:
             temperature=0.1,
             max_tokens=4096,
         )
-
-        content = response.choices[0].message.content or ""
-        cpp_code = extract_cpp_code(content)
-        cpp_code = inject_openmp_simd_directives(cpp_code)
-        return cpp_code
-
     except Exception as e:
-        # Fallback to local rule-based template if API is unreachable
-        return generate_fallback_cpp(source_code, optimization_level, enable_openmp, error_note=str(e))
+        # Never substitute placeholder code: it would compile and benchmark as a fake success.
+        raise TranspilerUnavailableError(f"LLM request failed: {e}") from e
 
-
-def generate_fallback_cpp(
-    source_code: str,
-    optimization_level: str = "O3",
-    enable_openmp: bool = True,
-    error_note: str = "",
-) -> str:
-    """Fallback generator when LLM API is unavailable."""
-    return f"""// Transpiled by Py2Cpp Transpiler (Deterministic Fallback Engine)
-// Standard: C++20 | Flag: -{optimization_level} | OpenMP: {enable_openmp}
-// Note: {error_note}
-
-#include <iostream>
-#include <vector>
-#include <chrono>
-#include <numeric>
-#include <cmath>
-#ifdef _OPENMP
-#include <omp.h>
-#endif
-
-// Original Python Source:
-/*
-{source_code.strip()}
-*/
-
-int main() {{
-    auto start = std::chrono::high_resolution_clock::now();
-
-    #ifdef _OPENMP
-    #pragma omp parallel for
-    for (int i = 0; i < 1000; ++i) {{
-        // Parallel computation placeholder
-    }}
-    #endif
-
-    std::cout << "Computation completed successfully." << std::endl;
-
-    auto end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double, std::milli> elapsed = end - start;
-    std::cout << "Elapsed: " << elapsed.count() << " ms" << std::endl;
-
-    return 0;
-}}
-"""
+    content = response.choices[0].message.content or ""
+    cpp_code = extract_cpp_code(content)
+    return inject_openmp_simd_directives(cpp_code)

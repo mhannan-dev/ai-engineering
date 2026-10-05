@@ -16,6 +16,7 @@ from config.settings import settings
 from compiler.runner import run_executable
 from benchmark.harness import run_benchmark_comparison
 from core.self_correction import transpile_with_feedback_loop
+from core.transpiler import TranspilerUnavailableError
 
 # ==============================================================================
 # Pydantic Schemas (Aligned with web/lib/api.ts contract)
@@ -222,5 +223,10 @@ async def transpile_code(payload: TranspileRequest):
             benchmark=bench_info,
         )
 
+    except TranspilerUnavailableError as e:
+        raise HTTPException(
+            status_code=502,
+            detail=f"The LLM provider did not respond, so no C++ was generated. Try again. ({e})",
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Transpilation pipeline error: {str(e)}")

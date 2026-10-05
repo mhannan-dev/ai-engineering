@@ -52,6 +52,8 @@ python verify_env.py
 | :--- | :--- | :--- | :--- |
 | **P1** | [Enterprise Brochure Generator](#-project-1-enterprise-brochure-generator) | Crawl4AI, Playwright, Instructor, Pydantic v2, Tailwind CSS v3 | **Complete & Verified** |
 | **P2** | [Airline Multi-Agent Customer Support](#-project-2-airline-multi-agent-system) | LiteLLM, LangGraph / Multi-Agent, Tool Calling | *In Development* |
+| **P3** | [Meeting Intelligence SaaS](#-project-3-meeting-intelligence-saas) | FastAPI, Next.js, Faster-Whisper, Deepgram, LiteLLM + Instructor | *In Development* |
+| **P4** | [High-Performance Code Transpiler](#-project-4-high-performance-code-transpiler) | FastAPI, Next.js, g++ C++20, OpenMP, LLM self-correction | **Complete** |
 
 ---
 
@@ -109,6 +111,40 @@ streamlit run airline_main_agent.py
 ```
 
 👉 Detailed architectural documentation & test scenarios: [projects/p2_airline_agent/README.MD](file:///e:/DockerProjects/saaa_rag_product/ai-engineering/projects/p2_airline_agent/README.MD)
+
+---
+
+## 🎙️ Project 3: Meeting Intelligence SaaS
+
+### 📌 Overview
+Upload a meeting recording and get structured minutes: summary, decisions, and action items. Confidential audio is transcribed locally with Faster-Whisper; everything else goes to Deepgram. A FastAPI backend (JWT auth, Alembic) and a Next.js frontend.
+
+### 💻 How to Run
+```powershell
+cd projects/p3_meeting_intelligence_saas
+.un.ps1 -Install
+.un.ps1 -Migrate
+.un.ps1
+```
+
+👉 Detailed documentation: [projects/p3_meeting_intelligence_saas/README.md](projects/p3_meeting_intelligence_saas/README.md)
+
+---
+
+## ⚡ Project 4: High-Performance Code Transpiler
+
+### 📌 Overview
+Converts numerical Python into C++20 with OpenMP, builds it with g++, feeds compiler errors back to the LLM until it builds, then benchmarks Python vs C++ and checks the outputs match.
+
+### 💻 How to Run
+Requires g++ with C++20 and OpenMP (on Windows: `scoop install mingw`).
+```powershell
+cd projects/p4_code_transpiler
+.un.ps1 -Install
+.un.ps1            # API :8000 + UI :3000
+```
+
+👉 Detailed documentation & sample results: [projects/p4_code_transpiler/README.md](projects/p4_code_transpiler/README.md)
 
 ---
 
