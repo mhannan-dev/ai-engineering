@@ -1,0 +1,14 @@
+# Runtime data: SQLite DB, uploaded files, Qdrant storage, BM25 indexes, downloaded models (~2.2 GB)
+data/
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/

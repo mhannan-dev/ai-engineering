@@ -54,6 +54,7 @@ python verify_env.py
 | **P2** | [Airline Multi-Agent Customer Support](#-project-2-airline-multi-agent-system) | LiteLLM, LangGraph / Multi-Agent, Tool Calling | *In Development* |
 | **P3** | [Meeting Intelligence SaaS](#-project-3-meeting-intelligence-saas) | FastAPI, Next.js, Faster-Whisper, Deepgram, LiteLLM + Instructor | *In Development* |
 | **P4** | [High-Performance Code Transpiler](#-project-4-high-performance-code-transpiler) | FastAPI, Next.js, g++ C++20, OpenMP, LLM self-correction | **Complete** |
+| **P5** | [Enterprise Knowledge Worker (RAG)](#-project-5-enterprise-knowledge-worker) | FastAPI, Qdrant, bm25s, multilingual-e5, English + Bangla | *Phase 1 of 6* |
 
 ---
 
@@ -122,9 +123,12 @@ Upload a meeting recording and get structured minutes: summary, decisions, and a
 ### 💻 How to Run
 ```powershell
 cd projects/p3_meeting_intelligence_saas
-.un.ps1 -Install
-.un.ps1 -Migrate
-.un.ps1
+.
+un.ps1 -Install
+.
+un.ps1 -Migrate
+.
+un.ps1
 ```
 
 👉 Detailed documentation: [projects/p3_meeting_intelligence_saas/README.md](projects/p3_meeting_intelligence_saas/README.md)
@@ -140,11 +144,29 @@ Converts numerical Python into C++20 with OpenMP, builds it with g++, feeds comp
 Requires g++ with C++20 and OpenMP (on Windows: `scoop install mingw`).
 ```powershell
 cd projects/p4_code_transpiler
-.un.ps1 -Install
-.un.ps1            # API :8000 + UI :3000
+.
+un.ps1 -Install
+.
+un.ps1            # API :8000 + UI :3000
 ```
 
 👉 Detailed documentation & sample results: [projects/p4_code_transpiler/README.md](projects/p4_code_transpiler/README.md)
+
+---
+
+## 📚 Project 5: Enterprise Knowledge Worker
+
+### 📌 Overview
+Hybrid-search RAG over your own English and Bangla documents: dense vectors (multilingual-e5) + BM25 with a Bangla-aware tokenizer, Reciprocal Rank Fusion, cross-encoder reranking, and answers with page-level citations. Phase 1 (ingestion) is complete.
+
+### 💻 How to Run
+```powershell
+cd projects/p5_knowledge_worker
+.un.ps1 -Install   # deps + migrations + embedding model (~2.2 GB)
+.un.ps1            # API :8000
+```
+
+👉 Detailed documentation & roadmap: [projects/p5_knowledge_worker/README.md](projects/p5_knowledge_worker/README.md)
 
 ---
 

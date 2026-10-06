@@ -14,3 +14,6 @@
 
 # Project 4: High-Performance Code Transpiler (FastAPI + C++20 + OpenMP)
 -r projects/p4_code_transpiler/requirements.txt
+
+# Project 5: Enterprise Knowledge Worker - Backend API (FastAPI + Qdrant + bm25s + fastembed)
+-r projects/p5_knowledge_worker/api/requirements.txt

@@ -5,19 +5,37 @@ Layering rule strictly obeyed: imports only from services/ and ui/components.
 Never touches domain/ or infra/ directly.
 """
 
-from __future__ import annotations
+import sys
+from pathlib import Path
+
+# Ensure src/ is on sys.path when executed directly via 'streamlit run'
+SRC_DIR = Path(__file__).resolve().parent.parent.parent
+if str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
 
 import streamlit as st
 
-from ..services.agent_service import (
-    execute_agent_loop,
-    get_active_model_info,
-    get_audit_records,
-    get_system_prompt,
-    sanitize_text,
-)
-from ..services.vision_service import parse_boarding_pass_vision
-from .components import render_chat_history, render_sidebar
+try:
+    from airline_agent.services.agent_service import (
+        execute_agent_loop,
+        get_active_model_info,
+        get_audit_records,
+        get_system_prompt,
+        sanitize_text,
+    )
+    from airline_agent.services.vision_service import parse_boarding_pass_vision
+    from airline_agent.ui.components import render_chat_history, render_sidebar
+except (ImportError, ValueError):
+    from ..services.agent_service import (
+        execute_agent_loop,
+        get_active_model_info,
+        get_audit_records,
+        get_system_prompt,
+        sanitize_text,
+    )
+    from ..services.vision_service import parse_boarding_pass_vision
+    from .components import render_chat_history, render_sidebar
+
 
 
 def main() -> None:

@@ -1,0 +1,14 @@
+# Optional Qdrant server. Without it the API uses embedded Qdrant under data/qdrant.
+# Start: docker compose up -d   then set QDRANT_URL=http://localhost:6333 in api/.env
+services:
+  qdrant:
+    image: qdrant/qdrant:v1.19.2  # matches qdrant-client 1.19
+    container_name: p5_qdrant
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_storage:/qdrant/storage
+    restart: unless-stopped
+
+volumes:
+  qdrant_storage:
