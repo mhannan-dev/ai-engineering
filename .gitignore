@@ -17,7 +17,6 @@ develop-eggs/
 dist/
 downloads/
 eggs/
-Docs/
 .eggs/
 /lib/
 lib64/
@@ -100,4 +99,8 @@ out/
 **/out/
 *.tsbuildinfo
 
-
+# Documentation files & folders
+Docs/
+docs/
+**/Docs/**
+**/docs/**
