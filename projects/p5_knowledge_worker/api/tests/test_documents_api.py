@@ -128,6 +128,14 @@ def test_read_root(client):
     assert res.status_code == 200
     data = res.json()
     assert data["message"] == "Welcome to my FastAPI application!"
+    assert data["title"] == "Enterprise Knowledge Worker API"
+    assert data["meta_title"] == "Enterprise Knowledge Worker API"
     assert "version" in data
     assert "docs" in data
+
+    # Test HTML response when requested by a browser
+    html_res = client.get("/", headers={"Accept": "text/html,application/xhtml+xml"})
+    assert html_res.status_code == 200
+    assert "<title>Enterprise Knowledge Worker API</title>" in html_res.text
+    assert '<meta name="title" content="Enterprise Knowledge Worker API">' in html_res.text
 

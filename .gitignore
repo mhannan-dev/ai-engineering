@@ -3,6 +3,7 @@
 .env.*
 !.env.example
 StudyNote.md
+LandChainProductIdea.md
 
 # Python bytecode & cache
 **/__pycache__/
