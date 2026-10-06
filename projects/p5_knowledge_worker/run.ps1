@@ -35,6 +35,7 @@ $ProjectRoot = $PSScriptRoot
 $ApiDir = Join-Path $ProjectRoot "api"
 # A globally activated venv (e.g. the repo root .venv) would make uv warn and ignore it anyway
 Remove-Item Env:VIRTUAL_ENV -ErrorAction SilentlyContinue
+$env:PYTHONUTF8 = "1"
 
 Write-Host ""
 Write-Host "==========================================================" -ForegroundColor Cyan
@@ -94,6 +95,17 @@ if ($Qdrant) {
     Write-Host "[OK] Qdrant at http://localhost:6333 (dashboard: /dashboard)." -ForegroundColor Green
     Write-Host "     Set QDRANT_URL=http://localhost:6333 in api/.env and re-index documents." -ForegroundColor DarkGray
     return
+}
+
+$existing = Get-NetTCPConnection -LocalPort 8000 -State Listen -ErrorAction SilentlyContinue
+if ($existing) {
+    Write-Host "[!] Port 8000 is already running (PID: $($existing.OwningProcess)). Stopping previous instance..." -ForegroundColor Yellow
+    foreach ($conn in $existing) {
+        if ($conn.OwningProcess) {
+            Stop-Process -Id $conn.OwningProcess -Force -ErrorAction SilentlyContinue
+        }
+    }
+    Start-Sleep -Seconds 1
 }
 
 Write-Host "[*] API:     http://localhost:8000" -ForegroundColor Cyan

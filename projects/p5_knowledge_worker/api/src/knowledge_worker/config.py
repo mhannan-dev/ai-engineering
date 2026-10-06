@@ -61,6 +61,11 @@ class Settings(BaseSettings):
     def model_cache_dir(self) -> Path:
         return self.DATA_DIR / "models"
 
+    @property
+    def is_local(self) -> bool:
+        """Return True if running in local or development environment."""
+        return self.ENVIRONMENT.strip().lower() in {"development", "local", "dev"}
+
 
 @lru_cache
 def get_settings() -> Settings:

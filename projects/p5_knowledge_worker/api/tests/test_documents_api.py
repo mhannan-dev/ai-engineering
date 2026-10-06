@@ -101,3 +101,33 @@ def test_reindex_replaces_chunks(client, container):
 
 def test_health(client):
     assert client.get("/health").json()["status"] == "ok"
+
+
+def test_is_local_setting(container):
+    assert container.settings.is_local is False  # ENVIRONMENT is "testing" in test suite
+    container.settings.ENVIRONMENT = "development"
+    assert container.settings.is_local is True
+    container.settings.ENVIRONMENT = "local"
+    assert container.settings.is_local is True
+    container.settings.ENVIRONMENT = "production"
+    assert container.settings.is_local is False
+    container.settings.ENVIRONMENT = "testing"
+
+
+def test_format_routes(client):
+    from knowledge_worker.core.route_printer import format_routes
+    routes = format_routes(client.app)
+    paths = {r["path"] for r in routes}
+    assert "/" in paths
+    assert "/api/v1/documents" in paths
+    assert "/health" in paths
+
+
+def test_read_root(client):
+    res = client.get("/")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["message"] == "Welcome to my FastAPI application!"
+    assert "version" in data
+    assert "docs" in data
+

@@ -8,14 +8,14 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from knowledge_worker.api.v1.endpoints import health
+from knowledge_worker.api.v1.endpoints import home
 from knowledge_worker.api.v1.router import api_router
 from knowledge_worker.config import get_settings
 from knowledge_worker.core.exceptions import register_exception_handlers
+from knowledge_worker.core.route_printer import print_api_routes
 from knowledge_worker.services.container import Container
 
 logger = logging.getLogger(__name__)
-
 
 def create_app(container_factory: Callable[[], Container] | None = None) -> FastAPI:
     settings = get_settings()
@@ -27,6 +27,9 @@ def create_app(container_factory: Callable[[], Container] | None = None) -> Fast
         resumed = container.resume_unfinished()
         if resumed:
             logger.info("Re-queued %d unfinished document(s)", resumed)
+        # Print the route table at startup in local/dev only, to keep production logs clean.
+        if settings.is_local:
+            print_api_routes(app)
         yield
         container.shutdown()
 
@@ -58,9 +61,14 @@ def create_app(container_factory: Callable[[], Container] | None = None) -> Fast
         allow_headers=["*"],
     )
     register_exception_handlers(app)
+    # Versioned API: every route in api_router is served under /api/v1.
     app.include_router(api_router, prefix=settings.API_V1_STR)
-    app.include_router(health.router)
+    # Root and health endpoint: confirms the API is up, healthy, and points to the docs.
+    app.include_router(home.router)
     return app
 
-
 app = create_app()
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run("knowledge_worker.main:app", host="127.0.0.1", port=8000, reload=True)
