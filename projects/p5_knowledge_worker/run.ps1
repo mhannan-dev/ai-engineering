@@ -11,8 +11,14 @@
 .PARAMETER Test
     Runs the backend test suite (pytest).
 
+.PARAMETER Eval
+    Runs the Phase 5 Information Retrieval ablation benchmark over the golden dataset.
+
 .PARAMETER Qdrant
     Starts the optional Qdrant server (docker compose). Set QDRANT_URL in api/.env to use it.
+
+.PARAMETER Web
+    Starts the Next.js frontend web workspace (npm run dev).
 
 .PARAMETER Stop
     Stops the API on port 8000.
@@ -27,6 +33,8 @@ param (
     [switch]$Install,
     [switch]$Migrate,
     [switch]$Test,
+    [switch]$Eval,
+    [switch]$Web,
     [switch]$Qdrant,
     [switch]$Stop
 )
@@ -86,6 +94,22 @@ if ($Migrate) {
 
 if ($Test) {
     Invoke-InApi { & uv run pytest }
+    return
+}
+
+if ($Eval) {
+    Invoke-InApi { & uv run python -m knowledge_worker.evaluation.cli }
+    return
+}
+
+if ($Web) {
+    Push-Location (Join-Path $ProjectRoot "web")
+    try {
+        Write-Host "[*] Starting Next.js Web UI on http://localhost:3000..." -ForegroundColor Cyan
+        & npm run dev
+    } finally {
+        Pop-Location
+    }
     return
 }
 

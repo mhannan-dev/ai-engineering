@@ -24,6 +24,7 @@ from sqlalchemy import delete  # noqa: E402
 from knowledge_worker.config import get_settings  # noqa: E402
 from knowledge_worker.db.models import Base, ChunkModel, DocumentModel  # noqa: E402
 from knowledge_worker.db.session import SessionLocal, engine  # noqa: E402
+from knowledge_worker.generation.llm import FakeLLMClient  # noqa: E402
 from knowledge_worker.ingestion.vector_store import VectorStore  # noqa: E402
 from knowledge_worker.main import create_app  # noqa: E402
 from knowledge_worker.services.container import Container  # noqa: E402
@@ -54,6 +55,22 @@ class FakeEmbedder:
         return max(1, len(text.split()))
 
 
+class FakeReranker:
+    """Mock cross-encoder for instant tests: returns term overlap score (0.0..1.0)."""
+
+    def rerank(self, query: str, passages: Sequence[str]) -> list[float]:
+        q_tokens = set(tokenize(query))
+        scores = []
+        for p in passages:
+            p_tokens = set(tokenize(p))
+            if not q_tokens or not p_tokens:
+                scores.append(0.0)
+            else:
+                overlap = len(q_tokens & p_tokens)
+                scores.append(overlap / len(q_tokens))
+        return scores
+
+
 class InlineContainer(Container):
     """Runs ingestion synchronously so tests can assert on the result right away."""
 
@@ -73,7 +90,13 @@ def container():
     settings = get_settings()
     vectors = VectorStore(QdrantClient(":memory:"), "test_chunks", FAKE_DIM)
     vectors.ensure_collection()
-    c = InlineContainer(settings, embedder=FakeEmbedder(), vectors=vectors)
+    c = InlineContainer(
+        settings,
+        embedder=FakeEmbedder(),
+        vectors=vectors,
+        reranker=FakeReranker(),
+        llm_client=FakeLLMClient(),
+    )
     yield c
     c.shutdown()
     with SessionLocal() as db:

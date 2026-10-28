@@ -1,0 +1,360 @@
+[
+  {
+    "id": "q01",
+    "query": "What is the maximum upload file size and how are duplicates handled?",
+    "category": "english",
+    "is_answerable": true,
+    "expected_doc": "retrieval_operations_handbook.md",
+    "expected_heading": "5. File size and duplicate handling",
+    "expected_fact": "An upload may contain at most 25 MiB and uses SHA-256 for duplicate detection.",
+    "relevance_grades": [
+      {"document_filename": "retrieval_operations_handbook.md", "heading": "5. File size and duplicate handling", "grade": 3},
+      {"document_filename": "retrieval_operations_handbook.md", "heading": "4. Accepted file formats", "grade": 1}
+    ]
+  },
+  {
+    "id": "q02",
+    "query": "How often are operational procedures reviewed compared to stable reference glossaries?",
+    "category": "english",
+    "is_answerable": true,
+    "expected_doc": "retrieval_operations_handbook.md",
+    "expected_heading": "3. Review schedule",
+    "expected_fact": "Operational procedures are reviewed every 90 days, glossaries every 180 days.",
+    "relevance_grades": [
+      {"document_filename": "retrieval_operations_handbook.md", "heading": "3. Review schedule", "grade": 3},
+      {"document_filename": "retrieval_operations_handbook.md", "heading": "1. Document ownership", "grade": 1}
+    ]
+  },
+  {
+    "id": "q03",
+    "query": "What is the revision identifier format at Northstar?",
+    "category": "english",
+    "is_answerable": true,
+    "expected_doc": "retrieval_operations_handbook.md",
+    "expected_heading": "2. Revision identifiers",
+    "expected_fact": "DOC-AREA-YYYY-NN, e.g. DOC-OPS-2026-04.",
+    "relevance_grades": [
+      {"document_filename": "retrieval_operations_handbook.md", "heading": "2. Revision identifiers", "grade": 3}
+    ]
+  },
+  {
+    "id": "q04",
+    "query": "What is the token budget and overlap context for section-aware chunking?",
+    "category": "english",
+    "is_answerable": true,
+    "expected_doc": "retrieval_operations_handbook.md",
+    "expected_heading": "6. Section-aware chunking",
+    "expected_fact": "400-token budget and up to 60 tokens trailing context.",
+    "relevance_grades": [
+      {"document_filename": "retrieval_operations_handbook.md", "heading": "6. Section-aware chunking", "grade": 3}
+    ]
+  },
+  {
+    "id": "q05",
+    "query": "What threshold is required for a document to receive a single-language label?",
+    "category": "english",
+    "is_answerable": true,
+    "expected_doc": "retrieval_operations_handbook.md",
+    "expected_heading": "7. Language labels",
+    "expected_fact": "One language must account for at least 80 percent of measured content.",
+    "relevance_grades": [
+      {"document_filename": "retrieval_operations_handbook.md", "heading": "7. Language labels", "grade": 3}
+    ]
+  },
+  {
+    "id": "q06",
+    "query": "What embedding model and dimension are used in dense retrieval?",
+    "category": "english",
+    "is_answerable": true,
+    "expected_doc": "retrieval_operations_handbook.md",
+    "expected_heading": "8. Dense retrieval",
+    "expected_fact": "Multilingual E5 Large with 1,024 dimensions.",
+    "relevance_grades": [
+      {"document_filename": "retrieval_operations_handbook.md", "heading": "8. Dense retrieval", "grade": 3}
+    ]
+  },
+  {
+    "id": "q07",
+    "query": "How does the custom tokenizer normalize Bengali numerals for BM25?",
+    "category": "english",
+    "is_answerable": true,
+    "expected_doc": "retrieval_operations_handbook.md",
+    "expected_heading": "9. Sparse retrieval",
+    "expected_fact": "Normalizes Bengali numerals such as ২০ to 20.",
+    "relevance_grades": [
+      {"document_filename": "retrieval_operations_handbook.md", "heading": "9. Sparse retrieval", "grade": 3}
+    ]
+  },
+  {
+    "id": "q08",
+    "query": "What value of k is used for Reciprocal Rank Fusion in the Northstar experiment?",
+    "category": "english",
+    "is_answerable": true,
+    "expected_doc": "retrieval_operations_handbook.md",
+    "expected_heading": "14. Reciprocal rank fusion",
+    "expected_fact": "k = 60 with one-based ranks.",
+    "relevance_grades": [
+      {"document_filename": "retrieval_operations_handbook.md", "heading": "14. Reciprocal rank fusion", "grade": 3}
+    ]
+  },
+  {
+    "id": "q09",
+    "query": "শাপলা কমিউনিটি ডেস্ক শুক্রবার কোন সময় থেকে কোন সময় খোলা থাকে?",
+    "category": "bangla",
+    "is_answerable": true,
+    "expected_doc": "bangla_community_service_handbook.md",
+    "expected_heading": "২. খোলা ও বন্ধের সময়",
+    "expected_fact": "শুক্রবার সকাল ৯টা থেকে দুপুর ১টা পর্যন্ত খোলা থাকে।",
+    "relevance_grades": [
+      {"document_filename": "bangla_community_service_handbook.md", "heading": "২. খোলা ও বন্ধের সময়", "grade": 3}
+    ]
+  },
+  {
+    "id": "q10",
+    "query": "কাউন্টারে পরিচয় যাচাইয়ের সময় ডেস্ক কি মূল পরিচয়পত্র জমা রেখে দেয়?",
+    "category": "bangla",
+    "is_answerable": true,
+    "expected_doc": "bangla_community_service_handbook.md",
+    "expected_heading": "৫. গ্রহণযোগ্য পরিচয়পত্র",
+    "expected_fact": "ডেস্ক মূল কপি রেখে দেয় না এবং প্রয়োজন ছাড়া ছবি তোলে না।",
+    "relevance_grades": [
+      {"document_filename": "bangla_community_service_handbook.md", "heading": "৫. গ্রহণযোগ্য পরিচয়পত্র", "grade": 3},
+      {"document_filename": "bangla_community_service_handbook.md", "heading": "৬. প্রয়োজনীয় কাগজের তালিকা", "grade": 1}
+    ]
+  },
+  {
+    "id": "q11",
+    "query": "সকাল ১০টার আগে সাধারণ তথ্য ডেস্কের জন্য কোন সিরিজের টোকেন নিতে হয়?",
+    "category": "bangla",
+    "is_answerable": true,
+    "expected_doc": "bangla_community_service_handbook.md",
+    "expected_heading": "৩. সেবা টোকেন",
+    "expected_fact": "সকাল ১০টার আগে আসা ব্যক্তিরা সাধারণ তথ্য ডেস্কে A-সিরিজ টোকেন নেন।",
+    "relevance_grades": [
+      {"document_filename": "bangla_community_service_handbook.md", "heading": "৩. সেবা টোকেন", "grade": 3}
+    ]
+  },
+  {
+    "id": "q12",
+    "query": "সাধারণ সহায়তা আবেদন জমা দেওয়ার পর প্রাথমিক যাচাইয়ের সময়সীমা কত দিন?",
+    "category": "bangla",
+    "is_answerable": true,
+    "expected_doc": "bangla_community_service_handbook.md",
+    "expected_heading": "৪. আবেদন গ্রহণের সময়সীমা",
+    "expected_fact": "দুই কর্মদিবসের মধ্যে প্রাথমিক যাচাই শেষ করার লক্ষ্য থাকে।",
+    "relevance_grades": [
+      {"document_filename": "bangla_community_service_handbook.md", "heading": "৪. আবেদন গ্রহণের সময়সীমা", "grade": 3}
+    ]
+  },
+  {
+    "id": "q13",
+    "query": "শাপলা ডেস্কে সাধারণ তথ্য ও আবেদন ফরম পূরণের জন্য কোনো ফি দিতে হয় কি?",
+    "category": "bangla",
+    "is_answerable": true,
+    "expected_doc": "bangla_community_service_handbook.md",
+    "expected_heading": "৭. ফি ও রসিদ",
+    "expected_fact": "সাধারণ তথ্য ও আবেদন-ফরম পূরণের সহায়তা বিনামূল্যে।",
+    "relevance_grades": [
+      {"document_filename": "bangla_community_service_handbook.md", "heading": "৭. ফি ও রসিদ", "grade": 3}
+    ]
+  },
+  {
+    "id": "q14",
+    "query": "তথ্য সংশোধনের অনুরোধ জমা দেওয়ার পর ট্র্যাকিং কোড কেমন ফরম্যাটে দেওয়া হয়?",
+    "category": "bangla",
+    "is_answerable": true,
+    "expected_doc": "bangla_community_service_handbook.md",
+    "expected_heading": "৮. তথ্য সংশোধনের আবেদন",
+    "expected_fact": "যেমন SH-COR-2026-014; ট্র্যাকিং কোডে ব্যক্তির নাম থাকে না।",
+    "relevance_grades": [
+      {"document_filename": "bangla_community_service_handbook.md", "heading": "৮. তথ্য সংশোধনের আবেদন", "grade": 3}
+    ]
+  },
+  {
+    "id": "q15",
+    "query": "সেবার বিরুদ্ধে অভিযোগ পাওয়ার পর কত কর্মদিবসের মধ্যে প্রাপ্তি স্বীকার দেওয়া হয়?",
+    "category": "bangla",
+    "is_answerable": true,
+    "expected_doc": "bangla_community_service_handbook.md",
+    "expected_heading": "১১. অভিযোগ জমা দেওয়া",
+    "expected_fact": "অভিযোগ পাওয়ার দুই কর্মদিবসের মধ্যে প্রাপ্তি স্বীকার দেওয়ার লক্ষ্য থাকে।",
+    "relevance_grades": [
+      {"document_filename": "bangla_community_service_handbook.md", "heading": "১১. অভিযোগ জমা দেওয়া", "grade": 3}
+    ]
+  },
+  {
+    "id": "q16",
+    "query": "দৃষ্টিপ্রতিবন্ধী বা বিশেষ চাহিদাসম্পন্ন ব্যক্তিদের জন্য ডেস্কে কী সহায়তা দেওয়া হয়?",
+    "category": "bangla",
+    "is_answerable": true,
+    "expected_doc": "bangla_community_service_handbook.md",
+    "expected_heading": "১৪. দৃষ্টিগ্রাহ্যতা ও প্রবেশাধিকার",
+    "expected_fact": "ঢালু পথ, বড় অক্ষরের কাগজ এবং মৌখিকভাবে ফরম পড়ে শোনানোর সুবিধা বিনামূল্যে দেওয়া হয়।",
+    "relevance_grades": [
+      {"document_filename": "bangla_community_service_handbook.md", "heading": "১৪. দৃষ্টিগ্রাহ্যতা ও প্রবেশাধিকার", "grade": 3}
+    ]
+  },
+  {
+    "id": "q17",
+    "query": "What days is the Shapla community service desk closed?",
+    "category": "cross_lingual",
+    "is_answerable": true,
+    "expected_doc": "bangla_community_service_handbook.md",
+    "expected_heading": "২. খোলা ও বন্ধের সময়",
+    "expected_fact": "Saturday, Sunday and government holidays.",
+    "relevance_grades": [
+      {"document_filename": "bangla_community_service_handbook.md", "heading": "২. খোলা ও বন্ধের সময়", "grade": 3}
+    ]
+  },
+  {
+    "id": "q18",
+    "query": "Does the community desk accept cash or personal mobile wallet payments for services?",
+    "category": "cross_lingual",
+    "is_answerable": true,
+    "expected_doc": "bangla_community_service_handbook.md",
+    "expected_heading": "৭. ফি ও রসিদ",
+    "expected_fact": "Desk does not collect cash or accept personal mobile wallet money; general services are free.",
+    "relevance_grades": [
+      {"document_filename": "bangla_community_service_handbook.md", "heading": "৭. ফি ও রসিদ", "grade": 3}
+    ]
+  },
+  {
+    "id": "q19",
+    "query": "Which token series is issued for document verification at the desk?",
+    "category": "cross_lingual",
+    "is_answerable": true,
+    "expected_doc": "bangla_community_service_handbook.md",
+    "expected_heading": "৩. সেবা টোকেন",
+    "expected_fact": "B-series tokens are issued for document verification.",
+    "relevance_grades": [
+      {"document_filename": "bangla_community_service_handbook.md", "heading": "৩. সেবা টোকেন", "grade": 3}
+    ]
+  },
+  {
+    "id": "q20",
+    "query": "নথি আপলোডের সাইজ লিমিট কত এবং একই ফাইল আবার আপলোড করলে সিস্টেম কী করে?",
+    "category": "cross_lingual",
+    "is_answerable": true,
+    "expected_doc": "retrieval_operations_handbook.md",
+    "expected_heading": "5. File size and duplicate handling",
+    "expected_fact": "সর্বোচ্চ ২৫ MiB এবং ডুপ্লিকেট ফাইল হলে SHA-256 এর মাধ্যমে রিজেক্ট করে আগের আইডির রেফারেন্স দেয়।",
+    "relevance_grades": [
+      {"document_filename": "retrieval_operations_handbook.md", "heading": "5. File size and duplicate handling", "grade": 3}
+    ]
+  },
+  {
+    "id": "q21",
+    "query": "রিট্রিভালে হাইব্রিড ফিউশন করার জন্য কোন ফর্মুলা এবং k এর মান কত রাখা হয়?",
+    "category": "cross_lingual",
+    "is_answerable": true,
+    "expected_doc": "retrieval_operations_handbook.md",
+    "expected_heading": "14. Reciprocal rank fusion",
+    "expected_fact": "Reciprocal Rank Fusion ফর্মুলা: 1 / (k + rank), যেখানে k = 60।",
+    "relevance_grades": [
+      {"document_filename": "retrieval_operations_handbook.md", "heading": "14. Reciprocal rank fusion", "grade": 3}
+    ]
+  },
+  {
+    "id": "q22",
+    "query": "বাংলা এবং ইংরেজি ডকুমেন্টের জন্য কোন এম্বেডিং মডেল এবং কত ডাইমেনশন ব্যবহার করা হয়?",
+    "category": "cross_lingual",
+    "is_answerable": true,
+    "expected_doc": "retrieval_operations_handbook.md",
+    "expected_heading": "8. Dense retrieval",
+    "expected_fact": "multilingual E5 Large মডেল এবং ১০২৪ ডাইমেনশন।",
+    "relevance_grades": [
+      {"document_filename": "retrieval_operations_handbook.md", "heading": "8. Dense retrieval", "grade": 3}
+    ]
+  },
+  {
+    "id": "q23",
+    "query": "shukrobar desk kokhon bondho hoy?",
+    "category": "banglish",
+    "is_answerable": true,
+    "expected_doc": "bangla_community_service_handbook.md",
+    "expected_heading": "২. খোলা ও বন্ধের সময়",
+    "expected_fact": "Friday open from 9 AM to 1 PM (closes at 1 PM).",
+    "relevance_grades": [
+      {"document_filename": "bangla_community_service_handbook.md", "heading": "২. খোলা ও বন্ধের সময়", "grade": 3}
+    ]
+  },
+  {
+    "id": "q24",
+    "query": "file upload er maximum size koto MB?",
+    "category": "banglish",
+    "is_answerable": true,
+    "expected_doc": "retrieval_operations_handbook.md",
+    "expected_heading": "5. File size and duplicate handling",
+    "expected_fact": "Maximum upload is 25 MiB.",
+    "relevance_grades": [
+      {"document_filename": "retrieval_operations_handbook.md", "heading": "5. File size and duplicate handling", "grade": 3}
+    ]
+  },
+  {
+    "id": "q25",
+    "query": "service form puron korte kono taka ba fee lagbe kina?",
+    "category": "banglish",
+    "is_answerable": true,
+    "expected_doc": "bangla_community_service_handbook.md",
+    "expected_heading": "৭. ফি ও রসিদ",
+    "expected_fact": "Shapla desk support is completely free of charge.",
+    "relevance_grades": [
+      {"document_filename": "bangla_community_service_handbook.md", "heading": "৭. ফি ও রসিদ", "grade": 3}
+    ]
+  },
+  {
+    "id": "q26",
+    "query": "বাংলাদেশ-জাপান বৈঠকে প্রস্তাবিত টেক পার্কে কোন কোন প্রযুক্তি খাতকে অগ্রাধিকার দেওয়ার কথা বলা হয়েছে?",
+    "category": "bangla",
+    "is_answerable": true,
+    "expected_doc": "BN.md",
+    "expected_heading": "গবেষণা ও প্রযুক্তিনির্ভর অর্থনীতি",
+    "expected_fact": "কৃত্রিম বুদ্ধিমত্তা (এআই), ক্লাউড কম্পিউটিং, রোবোটিকস এবং ইলেকট্রনিকস উৎপাদন।",
+    "relevance_grades": [
+      {"document_filename": "BN.md", "heading": "গবেষণা ও প্রযুক্তিনির্ভর অর্থনীতি", "grade": 3}
+    ]
+  },
+  {
+    "id": "q27",
+    "query": "জাপানের সাথে জ্বালানি, অবকাঠামো ও আইসিটি খাতে কত ইয়েন বেসরকারি বিনিয়োগ নিয়ে আলোচনা হয়?",
+    "category": "bangla",
+    "is_answerable": true,
+    "expected_doc": "BN.md",
+    "expected_heading": "বেসরকারি বিনিয়োগ আলোচনা",
+    "expected_fact": "১ ট্রিলিয়ন জাপানি ইয়েন (৬.৩ বিলিয়ন মার্কিন ডলার)।",
+    "relevance_grades": [
+      {"document_filename": "BN.md", "heading": "বেসরকারি বিনিয়োগ আলোচনা", "grade": 3}
+    ]
+  },
+  {
+    "id": "q28",
+    "query": "What is the corporate policy on employee reimbursement for personal laptop purchases?",
+    "category": "unanswerable",
+    "is_answerable": false,
+    "expected_doc": null,
+    "expected_heading": null,
+    "expected_fact": null,
+    "relevance_grades": []
+  },
+  {
+    "id": "q29",
+    "query": "শাপলা ডেস্কে ড্রাইভিং লাইসেন্স নবায়নের জন্য কত টাকা ফি দিতে হয়?",
+    "category": "unanswerable",
+    "is_answerable": false,
+    "expected_doc": null,
+    "expected_heading": null,
+    "expected_fact": null,
+    "relevance_grades": []
+  },
+  {
+    "id": "q30",
+    "query": "How do I deploy Qdrant on a multi-node Kubernetes cluster with Nvidia GPU operators?",
+    "category": "unanswerable",
+    "is_answerable": false,
+    "expected_doc": null,
+    "expected_heading": null,
+    "expected_fact": null,
+    "relevance_grades": []
+  }
+]
+

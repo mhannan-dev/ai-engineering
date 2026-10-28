@@ -12,10 +12,17 @@ DATA_DIR = API_DIR.parent / "data"
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=API_DIR / ".env", env_file_encoding="utf-8", extra="ignore", case_sensitive=False
+        env_file=(API_DIR / ".env", API_DIR.parents[2] / ".env"),
+        env_file_encoding="utf-8",
+        extra="ignore",
+        case_sensitive=False,
     )
 
     PROJECT_NAME: str = "Enterprise Knowledge Worker API"
+    PROJECT_DESCRIPTION: str = (
+        "Hybrid-search RAG over your own English and Bangla documents: dense vectors + BM25, "
+        "fused with Reciprocal Rank Fusion, reranked, and answered with page-level citations."
+    )
     VERSION: str = "0.1.0"
     API_V1_STR: str = "/api/v1"
     ENVIRONMENT: str = "development"
@@ -40,6 +47,18 @@ class Settings(BaseSettings):
     EMBEDDING_DIM: int = 1024
     EMBEDDING_QUERY_PREFIX: str = "query: "
     EMBEDDING_PASSAGE_PREFIX: str = "passage: "
+
+    # Reranking (Phase 3)
+    RERANKER_MODEL: str = "jinaai/jina-reranker-v2-base-multilingual"
+    RERANKER_THRESHOLD: float = 0.25
+    RERANKER_CANDIDATE_LIMIT: int = 20
+
+    # Generation (Phase 4)
+    LLM_MODEL: str = "deepseek/deepseek-chat"
+    OPENAI_API_KEY: str = ""
+    OPENAI_BASE_URL: str = ""
+    LLM_TEMPERATURE: float = 0.0
+    LLM_MAX_TOKENS: int = 1500
 
     # Chunking (e5 accepts 512 tokens; leave room for the prefix and heading)
     CHUNK_MAX_TOKENS: int = 400

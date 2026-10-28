@@ -5,6 +5,7 @@ description = "Hybrid-search RAG API over English and Bangla documents."
 requires-python = ">=3.12"
 dependencies = [
     "alembic>=1.20.0",
+    "avro-py>=2025.11.3",
     "beautifulsoup4>=4.15.0",
     "bm25s>=0.3.12",
     "fastapi[standard]>=0.142.2",

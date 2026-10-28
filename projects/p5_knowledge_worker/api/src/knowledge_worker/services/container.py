@@ -13,17 +13,29 @@ from sqlalchemy import select
 from knowledge_worker.config import Settings
 from knowledge_worker.db.models import DocumentModel
 from knowledge_worker.db.session import SessionLocal
+from knowledge_worker.generation.generator import FaithfulGenerator
+from knowledge_worker.generation.llm import LiteLLMClient, LLMClient
+from knowledge_worker.generation.validator import CitationValidator
 from knowledge_worker.ingestion.embedder import Embedder, FastEmbedEmbedder
 from knowledge_worker.ingestion.pipeline import IngestionPipeline
 from knowledge_worker.ingestion.sparse_index import SparseIndex
 from knowledge_worker.ingestion.vector_store import VectorStore
+from knowledge_worker.retrieval.reranker import FastEmbedReranker, Reranker
+from knowledge_worker.retrieval.retriever import HybridRetriever
 
 logger = logging.getLogger(__name__)
 
 
 class Container:
-    def __init__(self, settings: Settings, embedder: Embedder | None = None,
-                 vectors: VectorStore | None = None):
+    def __init__(
+        self,
+        settings: Settings,
+        embedder: Embedder | None = None,
+        vectors: VectorStore | None = None,
+        reranker: Reranker | None = None,
+        llm_client: LLMClient | None = None,
+        validator: CitationValidator | None = None,
+    ):
         self.settings = settings
         self.embedder = embedder or FastEmbedEmbedder(
             settings.EMBEDDING_MODEL,
@@ -37,8 +49,24 @@ class Container:
             settings.EMBEDDING_DIM,
         )
         self.sparse = SparseIndex(settings.bm25_dir)
+        self.reranker = reranker or FastEmbedReranker(
+            model_name=settings.RERANKER_MODEL,
+            cache_dir=str(settings.model_cache_dir),
+        )
         self.pipeline = IngestionPipeline(
             settings, SessionLocal, self.embedder, self.vectors, self.sparse
+        )
+        self.retriever = HybridRetriever(
+            SessionLocal, self.embedder, self.vectors, self.sparse, reranker=self.reranker
+        )
+        self.llm_client = llm_client or LiteLLMClient(
+            model=settings.LLM_MODEL,
+            api_key=settings.OPENAI_API_KEY,
+            api_base=settings.OPENAI_BASE_URL,
+        )
+        self.validator = validator or CitationValidator()
+        self.generator = FaithfulGenerator(
+            self.retriever, self.llm_client, self.settings, self.validator
         )
         self._worker = ThreadPoolExecutor(max_workers=1, thread_name_prefix="ingest")
         self._busy = threading.Event()

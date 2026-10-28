@@ -11,10 +11,10 @@ Hybrid-search RAG over your own **English and Bangla** documents: dense vectors 
 | Phase | Scope | Status |
 | :--- | :--- | :--- |
 | 1 | Ingestion: parse → chunk → embed → Qdrant + BM25 | ✅ Done |
-| 2 | Hybrid retrieval + hand-written RRF, `/search/debug` | ⏳ |
-| 3 | Cross-encoder rerank (`jina-reranker-v2-base-multilingual`) + "I don't know" threshold | ⏳ |
-| 4 | Faithful generation: Instructor schema, citation validator, SSE streaming | ⏳ |
-| 5 | Eval harness: Recall@5 / MRR / nDCG, ablation dense vs BM25 vs RRF vs RRF+rerank | ⏳ |
+| 2 | Hybrid retrieval + hand-written RRF, `/search/debug` | ✅ Done |
+| 3 | Cross-encoder rerank (`jina-reranker-v2-base-multilingual`) + "I don't know" threshold | ✅ Done |
+| 4 | Faithful generation: Instructor schema, citation validator, SSE streaming | ✅ Done |
+| 5 | Eval harness: Recall@5 / MRR / nDCG, ablation dense vs BM25 vs RRF vs RRF+rerank | ✅ Done |
 | 6 | Next.js UI, JWT auth (from P3), README results | ⏳ |
 
 ---

@@ -89,11 +89,11 @@ and even then explain it line by line and suggest re-writing it from memory afte
 | :--- | :--- | :--- |
 | 0 | Read Phase 1 code, answer the reading questions | ⏳ |
 | 1 | Ingestion (written by Claude) | ✅ |
-| 5a | Eval set from own documents (~30 questions, EN/BN/mixed/unanswerable) | ⏳ |
-| 2 | Hybrid retrieval + RRF | ⏳ |
-| 3 | Cross-encoder rerank + "I don't know" threshold | ⏳ |
-| 4 | Generation with citations + validator | ⏳ |
-| 5 | Metrics + ablation table | ⏳ |
+| 5a | Eval set from own documents (~30 questions, EN/BN/mixed/unanswerable) | ✅ |
+| 2 | Hybrid retrieval + RRF | ✅ |
+| 3 | Cross-encoder rerank + "I don't know" threshold | ✅ |
+| 4 | Generation with citations + validator | ✅ |
+| 5 | Metrics + ablation table | ✅ |
 | 6 | UI + auth | ⏳ |
 
 Update this table when a phase is finished.

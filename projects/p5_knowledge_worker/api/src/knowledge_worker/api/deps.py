@@ -34,3 +34,17 @@ def get_document_service(db: DatabaseDep, container: ContainerDep) -> DocumentSe
 
 
 DocumentServiceDep = Annotated[DocumentService, Depends(get_document_service)]
+
+
+def get_retriever(container: ContainerDep):
+    return container.retriever
+
+
+RetrieverDep = Annotated[object, Depends(get_retriever)]
+
+
+def get_generator(container: ContainerDep):
+    return container.generator
+
+
+GeneratorDep = Annotated[object, Depends(get_generator)]

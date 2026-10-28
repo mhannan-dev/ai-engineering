@@ -36,8 +36,9 @@ def create_app(container_factory: Callable[[], Container] | None = None) -> Fast
     app = FastAPI(
         title=settings.PROJECT_NAME,
         version=settings.VERSION,
-        description="Hybrid-search RAG over your own English and Bangla documents.",
+        description=settings.PROJECT_DESCRIPTION,
         lifespan=lifespan,
+        redoc_url=None,
     )
 
     # Turn unhandled errors into JSON 500s inside CORS, so browsers see the response.

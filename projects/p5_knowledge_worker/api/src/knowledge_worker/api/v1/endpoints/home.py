@@ -1,5 +1,6 @@
 """Home and root health check endpoints."""
 
+from html import escape
 from typing import Any
 
 from fastapi import APIRouter, Request, Response
@@ -17,6 +18,7 @@ def read_root(request: Request, settings: SettingsDep) -> Response:
     payload: dict[str, Any] = {
         "title": settings.PROJECT_NAME,
         "meta_title": settings.PROJECT_NAME,
+        "description": settings.PROJECT_DESCRIPTION,
         "status": "ok",
         "message": "Welcome to my FastAPI application!",
         "project": settings.PROJECT_NAME,
@@ -27,14 +29,23 @@ def read_root(request: Request, settings: SettingsDep) -> Response:
     # If viewed in a web browser, return a rich HTML landing page with proper meta title tags
     accept = request.headers.get("accept", "")
     if "text/html" in accept and not accept.startswith("*/*"):
+        # Settings can come from .env, so escape before putting them into HTML attributes.
+        name = escape(settings.PROJECT_NAME)
+        description = escape(settings.PROJECT_DESCRIPTION)
         html_content = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{settings.PROJECT_NAME}</title>
-    <meta name="title" content="{settings.PROJECT_NAME}">
-    <meta name="description" content="Hybrid-search RAG over English and Bangla documents.">
+    <title>{name}</title>
+    <meta name="title" content="{name}">
+    <meta name="description" content="{description}">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{name}">
+    <meta property="og:description" content="{description}">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="{name}">
+    <meta name="twitter:description" content="{description}">
     <style>
         :root {{
             --bg: #0b0f19;
@@ -101,11 +112,10 @@ def read_root(request: Request, settings: SettingsDep) -> Response:
 <body>
     <div class="card">
         <div class="badge"><span class="dot"></span> System Status: Online (ok)</div>
-        <h1>{settings.PROJECT_NAME}</h1>
-        <p>{payload["message"]} High-performance multilingual enterprise RAG engine supporting English and Bangla document intelligence.</p>
+        <h1>{name}</h1>
+        <p>{description}</p>
         <div class="actions">
             <a href="/docs" class="btn btn-primary">Interactive Swagger Docs</a>
-            <a href="/redoc" class="btn btn-secondary">ReDoc API Specs</a>
         </div>
         <div class="meta-footer">
             <span>Version {settings.VERSION}</span>

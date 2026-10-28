@@ -100,7 +100,7 @@ def print_api_routes(app: "FastAPI", base_url: str = "http://localhost:8000") ->
         "",
         c(_BOLD_CYAN, f"[{border_top}]"),
         c(_BOLD_CYAN, f"  {app.title} ({app.version}) - Registered API Routes"),
-        c(_DIM, f"  Swagger: {base_url}/docs  |  ReDoc: {base_url}/redoc  |  OpenAPI: {base_url}/openapi.json"),
+        c(_DIM, f"  Swagger: {base_url}/docs  |  OpenAPI: {base_url}/openapi.json"),
         c(_BOLD_CYAN, f"[{border_top}]"),
         f"  {c(_BOLD_WHITE, 'Method'.ljust(max_method_len))}  {c(_BOLD_WHITE, 'Endpoint'.ljust(max_path_len))}  {c(_BOLD_WHITE, 'Tag'.ljust(max_tag_len + 2))}  {c(_BOLD_WHITE, 'Summary')}",
         c(_GRAY, f"  {divider}"),
