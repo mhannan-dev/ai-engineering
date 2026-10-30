@@ -23,6 +23,19 @@ class Base(DeclarativeBase):
     pass
 
 
+class UserModel(Base):
+    """An account. Emails are stored lower-cased so sign-in is case-insensitive."""
+
+    __tablename__ = "users"
+    __table_args__ = (UniqueConstraint("email", name="uq_users_email"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    email: Mapped[str] = mapped_column(String(255), nullable=False)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=_now)
+
+
 class DocumentModel(Base):
     """An uploaded file and its indexing state: pending -> processing -> indexed | failed."""
 
@@ -35,7 +48,8 @@ class DocumentModel(Base):
     )
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
-    # No users table until auth lands in Phase 6; the foreign key is added with it.
+    # A users.id, or LOCAL_USER_ID when AUTH_ENABLED=false. No foreign key, since the local
+    # user has no row in the users table.
     user_id: Mapped[str] = mapped_column(String(36), nullable=False)
     filename: Mapped[str] = mapped_column(String(255), nullable=False)
     format: Mapped[str] = mapped_column(String(8), nullable=False)

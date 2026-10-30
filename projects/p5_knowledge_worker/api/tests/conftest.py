@@ -15,6 +15,8 @@ _TMP = Path(tempfile.mkdtemp(prefix="kw-tests-"))
 os.environ["DATA_DIR"] = str(_TMP)
 os.environ["DATABASE_URL"] = f"sqlite:///{(_TMP / 'test.db').as_posix()}"
 os.environ["ENVIRONMENT"] = "testing"
+# Most tests act as the single local user; test_auth.py turns auth on per app.
+os.environ["AUTH_ENABLED"] = "false"
 
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
@@ -22,7 +24,7 @@ from qdrant_client import QdrantClient  # noqa: E402
 from sqlalchemy import delete  # noqa: E402
 
 from knowledge_worker.config import get_settings  # noqa: E402
-from knowledge_worker.db.models import Base, ChunkModel, DocumentModel  # noqa: E402
+from knowledge_worker.db.models import Base, ChunkModel, DocumentModel, UserModel  # noqa: E402
 from knowledge_worker.db.session import SessionLocal, engine  # noqa: E402
 from knowledge_worker.generation.llm import FakeLLMClient  # noqa: E402
 from knowledge_worker.ingestion.vector_store import VectorStore  # noqa: E402
@@ -102,6 +104,7 @@ def container():
     with SessionLocal() as db:
         db.execute(delete(ChunkModel))
         db.execute(delete(DocumentModel))
+        db.execute(delete(UserModel))
         db.commit()
 
 

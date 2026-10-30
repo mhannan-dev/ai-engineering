@@ -25,7 +25,8 @@
 
 .EXAMPLE
     .\run.ps1 -Install
-    .\run.ps1            # API at http://localhost:8000 (Swagger: /docs)
+    .\run.ps1            # API at http://localhost:8000 + Web UI at http://localhost:3000
+    .\run.ps1 -Web       # Next.js only (if API is already running separately)
 #>
 
 [CmdletBinding()]
@@ -57,13 +58,15 @@ function Invoke-InApi([scriptblock]$Block) {
 }
 
 if ($Stop) {
-    $conns = Get-NetTCPConnection -LocalPort 8000 -ErrorAction SilentlyContinue
-    foreach ($conn in $conns) {
-        if ($conn.OwningProcess) {
-            Stop-Process -Id $conn.OwningProcess -Force -ErrorAction SilentlyContinue
+    foreach ($port in @(8000, 3000)) {
+        $conns = Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue
+        foreach ($conn in $conns) {
+            if ($conn.OwningProcess) {
+                Stop-Process -Id $conn.OwningProcess -Force -ErrorAction SilentlyContinue
+            }
         }
     }
-    Write-Host "[OK] Port 8000 is free." -ForegroundColor Green
+    Write-Host "[OK] Ports 8000 and 3000 are free." -ForegroundColor Green
     return
 }
 
@@ -121,17 +124,42 @@ if ($Qdrant) {
     return
 }
 
-$existing = Get-NetTCPConnection -LocalPort 8000 -State Listen -ErrorAction SilentlyContinue
-if ($existing) {
-    Write-Host "[!] Port 8000 is already running (PID: $($existing.OwningProcess)). Stopping previous instance..." -ForegroundColor Yellow
-    foreach ($conn in $existing) {
-        if ($conn.OwningProcess) {
-            Stop-Process -Id $conn.OwningProcess -Force -ErrorAction SilentlyContinue
+foreach ($portEntry in @(@{Port=8000; Name="API"}, @{Port=3000; Name="Web"})) {
+    $existing = Get-NetTCPConnection -LocalPort $portEntry.Port -State Listen -ErrorAction SilentlyContinue
+    if ($existing) {
+        Write-Host "[!] Port $($portEntry.Port) ($($portEntry.Name)) already in use. Stopping..." -ForegroundColor Yellow
+        foreach ($conn in $existing) {
+            if ($conn.OwningProcess) {
+                Stop-Process -Id $conn.OwningProcess -Force -ErrorAction SilentlyContinue
+            }
         }
     }
-    Start-Sleep -Seconds 1
 }
+Start-Sleep -Milliseconds 500
 
-Write-Host "[*] API:     http://localhost:8000" -ForegroundColor Cyan
-Write-Host "    Swagger: http://localhost:8000/docs" -ForegroundColor DarkCyan
-Invoke-InApi { & uv run fastapi dev main.py }
+Write-Host "[*] API:     http://localhost:8000  (Swagger: /docs)" -ForegroundColor Cyan
+Write-Host "[*] Web UI:  http://localhost:3000" -ForegroundColor Cyan
+Write-Host ""
+
+# Start Next.js web UI in a background job
+$WebDir = Join-Path $ProjectRoot "web"
+$webJob = Start-Job -ScriptBlock {
+    param($dir)
+    Set-Location $dir
+    & npm run dev
+} -ArgumentList $WebDir
+
+Write-Host "[+] Next.js starting in background (job $($webJob.Id))..." -ForegroundColor DarkGray
+Write-Host "    Press Ctrl+C to stop both services." -ForegroundColor DarkGray
+Write-Host ""
+
+try {
+    # Run the API in the foreground
+    Invoke-InApi { & uv run fastapi dev main.py }
+} finally {
+    Write-Host "" -ForegroundColor Gray
+    Write-Host "[*] Stopping Next.js web job..." -ForegroundColor Yellow
+    Stop-Job  -Job $webJob -ErrorAction SilentlyContinue
+    Remove-Job -Job $webJob -Force -ErrorAction SilentlyContinue
+    Write-Host "[OK] All services stopped." -ForegroundColor Green
+}

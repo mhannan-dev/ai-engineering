@@ -3,11 +3,12 @@
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 API_DIR = Path(__file__).resolve().parents[2]
 DATA_DIR = API_DIR.parent / "data"
+DEV_SECRET_KEY = "dev-secret-key-change-in-production-knowledge-worker"
 
 
 class Settings(BaseSettings):
@@ -32,8 +33,11 @@ class Settings(BaseSettings):
         default_factory=lambda: ["http://localhost:3000", "http://127.0.0.1:3000"]
     )
 
-    # Until auth lands (Phase 6) every request acts as this user. All rows and vectors already
-    # carry user_id, so switching to real users only changes the dependency in api/deps.py.
+    # Auth (Phase 6): signed bearer tokens, ported from P3. With AUTH_ENABLED=false every request
+    # acts as LOCAL_USER_ID, which is handy for local experiments and the test suite.
+    AUTH_ENABLED: bool = True
+    SECRET_KEY: str = DEV_SECRET_KEY
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
     LOCAL_USER_ID: str = "local"
 
     # Storage
@@ -84,6 +88,13 @@ class Settings(BaseSettings):
     def is_local(self) -> bool:
         """Return True if running in local or development environment."""
         return self.ENVIRONMENT.strip().lower() in {"development", "local", "dev"}
+
+    @model_validator(mode="after")
+    def _require_real_secret_outside_dev(self) -> "Settings":
+        env = self.ENVIRONMENT.strip().lower()
+        if env not in {"development", "local", "dev", "testing"} and self.SECRET_KEY == DEV_SECRET_KEY:
+            raise ValueError(f"SECRET_KEY must be set (not the default) when ENVIRONMENT={env!r}.")
+        return self
 
 
 @lru_cache

@@ -2,7 +2,7 @@
 
 Hybrid-search RAG over your own **English and Bangla** documents: dense vectors + BM25, fused with Reciprocal Rank Fusion, reranked by a cross-encoder, and answered with bracketed citations that point to a file and page.
 
-> **Status: Phase 1 of 6 complete (ingestion).** Documents can be uploaded, parsed, chunked and indexed into both Qdrant and BM25. Retrieval, reranking, answer generation, evaluation and the web UI follow.
+> **Status: Phases 1–5 complete; Phase 6 is in progress.** The API supports document ingestion, hybrid retrieval, reranking, grounded answers and evaluation. The Phase 6 web UI and JWT authentication are being integrated.
 
 ---
 
@@ -15,7 +15,7 @@ Hybrid-search RAG over your own **English and Bangla** documents: dense vectors 
 | 3 | Cross-encoder rerank (`jina-reranker-v2-base-multilingual`) + "I don't know" threshold | ✅ Done |
 | 4 | Faithful generation: Instructor schema, citation validator, SSE streaming | ✅ Done |
 | 5 | Eval harness: Recall@5 / MRR / nDCG, ablation dense vs BM25 vs RRF vs RRF+rerank | ✅ Done |
-| 6 | Next.js UI, JWT auth (from P3), README results | ⏳ |
+| 6 | Next.js UI, JWT auth (from P3), README results | 🚧 In progress |
 
 ---
 
@@ -120,7 +120,7 @@ Errors always have the shape `{"error", "message", "details"}`, with these statu
 
 ## ⚠️ Known Limitations (Phase 1)
 
-- **No auth yet.** Every request acts as `LOCAL_USER_ID`. Every row and vector already carries `user_id`, and all queries filter on it, so Phase 6 only needs to replace `get_current_user_id` in [api/deps.py](api/src/knowledge_worker/api/deps.py).
+- **Authentication is configurable.** With `AUTH_ENABLED=true` (the default), protected API requests require a bearer access token obtained from `/api/v1/auth/register` or `/api/v1/auth/login`. For local experiments, `AUTH_ENABLED=false` makes requests act as `LOCAL_USER_ID`. Every row and vector carries `user_id`, and queries are scoped to it.
 - **Embedded Qdrant is single-process.** Run one API worker, or use the Qdrant server.
 - **Re-indexing rebuilds the user's whole BM25 index.** bm25s can't update an index in place. This is fine up to tens of thousands of chunks.
 - **CPU embedding speed.** e5-large indexes roughly a few chunks per second, so a 300-page PDF takes minutes. Indexing runs on one background worker, and the API stays responsive.

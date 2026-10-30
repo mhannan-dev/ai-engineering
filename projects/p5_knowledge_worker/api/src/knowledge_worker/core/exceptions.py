@@ -20,6 +20,11 @@ class AppException(Exception):
         self.details = details or {}
 
 
+class UnauthorizedError(AppException):
+    def __init__(self, message: str = "Not authenticated.", details: dict[str, Any] | None = None):
+        super().__init__(message, status.HTTP_401_UNAUTHORIZED, details)
+
+
 class NotFoundError(AppException):
     def __init__(self, message: str = "Resource not found", details: dict[str, Any] | None = None):
         super().__init__(message, status.HTTP_404_NOT_FOUND, details)

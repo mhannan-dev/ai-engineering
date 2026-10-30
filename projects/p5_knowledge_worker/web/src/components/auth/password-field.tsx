@@ -2,7 +2,19 @@
 
 import { useState } from "react";
 
-export function PasswordField() {
+export function PasswordField({
+  value,
+  onChange,
+  autoComplete = "current-password",
+  minLength,
+  disabled = false,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  autoComplete?: "current-password" | "new-password";
+  minLength?: number;
+  disabled?: boolean;
+}) {
   const [visible, setVisible] = useState(false);
 
   return (
@@ -18,10 +30,14 @@ export function PasswordField() {
           id="password"
           name="password"
           type={visible ? "text" : "password"}
-          autoComplete="current-password"
+          autoComplete={autoComplete}
           required
-          maxLength={10}
-          className="block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 pr-11 text-zinc-900 placeholder-zinc-400 shadow-sm transition-colors focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-50 dark:placeholder-zinc-500 dark:focus:border-zinc-400 dark:focus:ring-zinc-400 sm:text-sm"
+          minLength={minLength}
+          maxLength={128}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          disabled={disabled}
+          className="block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 pr-11 text-zinc-900 placeholder-zinc-400 shadow-sm transition-colors focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-50 dark:placeholder-zinc-500 dark:focus:border-zinc-400 dark:focus:ring-zinc-400 sm:text-sm"
           placeholder="••••••••"
         />
         <button

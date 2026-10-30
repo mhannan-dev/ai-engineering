@@ -1,51 +1,58 @@
-import Link from "next/link";
+"use client";
 
+import { useRouter } from "next/navigation";
+import { useState, type FormEvent } from "react";
+
+import { useAuth } from "@/components/auth/auth-provider";
 import { FormField } from "@/components/auth/form-field";
 import { PasswordField } from "@/components/auth/password-field";
 import { SubmitButton } from "@/components/auth/submit-button";
-
-function AccountOptions() {
-  return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center">
-        <input
-          id="remember-me"
-          name="remember-me"
-          type="checkbox"
-          className="h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-500 dark:border-zinc-600 dark:bg-zinc-800 dark:ring-offset-zinc-900 dark:focus:ring-zinc-400"
-        />
-        <label
-          htmlFor="remember-me"
-          className="ml-2 block text-sm text-zinc-700 dark:text-zinc-300"
-        >
-          Remember me
-        </label>
-      </div>
-      <Link
-        href="/forgot-password"
-        className="text-sm font-medium text-zinc-900 hover:text-zinc-700 dark:text-zinc-300 dark:hover:text-zinc-100"
-      >
-        Forgot password?
-      </Link>
-    </div>
-  );
-}
+import { ApiError, login } from "@/lib/api";
 
 export function SignInForm() {
+  const { signIn } = useAuth();
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setBusy(true);
+    setError(null);
+    try {
+      signIn(await login(email, password));
+      router.replace("/");
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Couldn't sign in right now.");
+      setBusy(false);
+    }
+  }
+
   return (
-    <form className="mt-8 space-y-6" action="#" method="POST">
-      <div className="space-y-4 rounded-md shadow-sm">
+    <form onSubmit={(event) => void handleSubmit(event)} className="mt-8 space-y-6">
+      <div className="space-y-4">
         <FormField
           id="email"
           label="Email address"
           type="email"
           autoComplete="email"
           placeholder="you@example.com"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          disabled={busy}
         />
-        <PasswordField />
+        <PasswordField value={password} onChange={setPassword} disabled={busy} />
       </div>
-      <AccountOptions />
-      <SubmitButton>Sign in</SubmitButton>
+
+      {error && (
+        <p role="alert" className="text-sm text-red-600 dark:text-red-400">
+          {error}
+        </p>
+      )}
+
+      <SubmitButton disabled={busy}>{busy ? "Signing in…" : "Sign in"}</SubmitButton>
     </form>
   );
 }
