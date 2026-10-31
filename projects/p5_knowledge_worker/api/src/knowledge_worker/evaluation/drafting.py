@@ -75,7 +75,12 @@ def plan(
     categories: list[Category] | None = None,
     skip: str = DEFAULT_SKIP,
 ) -> list[Job]:
-    """One job per (section, category) to draft, in document order."""
+    """One job per (section, category) to draft, in document order.
+
+    Lines matching `skip` (the disclaimers) are dropped from the section text first, so a
+    one-section TXT file with a disclaimer still gets drafted. Sections left shorter than
+    MIN_SECTION_CHARS are skipped.
+    """
     skip_re = re.compile(skip) if skip else None
     jobs: list[Job] = []
     for doc in dataset.manifest.documents:
@@ -83,12 +88,15 @@ def plan(
             continue
         data = (dataset.root / doc.path).read_bytes()
         for index, section in enumerate(parse_document(data, detect_format(doc.name, data)), start=1):
-            if len(section.text) < MIN_SECTION_CHARS or (skip_re and skip_re.search(section.text)):
+            text = section.text
+            if skip_re:
+                text = "\n".join(line for line in text.splitlines() if not skip_re.search(line)).strip()
+            if len(text) < MIN_SECTION_CHARS:
                 continue
-            for category in categories_for(doc, section.text):
+            for category in categories_for(doc, text):
                 if categories and category not in categories:
                     continue
-                jobs.append(Job(doc, index, section.heading, section.text, category))
+                jobs.append(Job(doc, index, section.heading, text, category))
     return jobs
 
 

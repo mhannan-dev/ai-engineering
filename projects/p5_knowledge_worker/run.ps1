@@ -53,8 +53,11 @@ Write-Host "==========================================================" -Foregro
 Write-Host ""
 
 function Invoke-InApi([scriptblock]$Block) {
+    # The package isn't installed into the venv; `python -m knowledge_worker...` needs src on the path.
     Push-Location $ApiDir
-    try { & $Block } finally { Pop-Location }
+    $previousPath = $env:PYTHONPATH
+    $env:PYTHONPATH = "src"
+    try { & $Block } finally { $env:PYTHONPATH = $previousPath; Pop-Location }
 }
 
 function Stop-P5Services {

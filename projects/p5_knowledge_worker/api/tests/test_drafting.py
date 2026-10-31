@@ -75,6 +75,20 @@ class TestPlan:
         jobs = plan(load_rag_dataset(root))
         assert {j.heading for j in jobs} == {"1. Annual leave", "2. Values"}
 
+    def test_drops_the_disclaimer_line_but_keeps_the_rest(self, root):
+        # A TXT file is one section, so skipping the whole section would skip the document.
+        notice = "Synthetic retrieval-test document. All of it is fictional.\n\n" + (
+            "The canteen on the second floor serves lunch from 12:30 to 14:30 on working days. "
+        ) * 2
+        (root / "notice.txt").write_text(notice, encoding="utf-8")
+        manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
+        manifest["documents"].append(EN.model_copy(update={"name": "notice.txt", "path": "notice.txt"}).model_dump())
+        (root / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+
+        jobs = [j for j in plan(load_rag_dataset(root), docs=["notice.txt"]) if j.category == "english"]
+        assert len(jobs) == 1
+        assert jobs[0].text.startswith("The canteen") and "Synthetic" not in jobs[0].text
+
     def test_filters_by_category(self, root):
         jobs = plan(load_rag_dataset(root), categories=["numeric"])
         assert [(j.heading, j.category) for j in jobs] == [("1. Annual leave", "numeric")]

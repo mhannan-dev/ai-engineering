@@ -1,9 +1,9 @@
 # Bilingual RAG Eval (Bangla + English)
 
 Questions in English, Bangla and Banglish over policy-style documents, with graded section-level
-labels, for evaluating retrieval (and later, training a reranker). Version 0.1.0 is the seed: the
-30 queries of the original benchmark, converted to this format. It is being expanded to 150+ test
-queries over 9 categories.
+labels, for evaluating retrieval (and later, training a reranker). Version 0.2.0 has 17 documents
+(11 test, 6 train) and the 30 seed queries of the original benchmark. It is being expanded to 150+
+test queries over 9 categories.
 
 ## Files
 
@@ -13,6 +13,30 @@ queries over 9 categories.
 | `queries.jsonl` | One query per line (schema below) |
 
 Documents currently point into `../../sample_documents/`; the published copy will include them.
+
+| Split | Documents |
+| :--- | :--- |
+| `test` | The two Northstar handbooks, `BN.md`, and the eight Meghna documents in `sample_documents/eval_test/` (Markdown, HTML, PDF, DOCX and TXT; English, Bangla and mixed) |
+| `train` | The six Northstar documents in `sample_documents/extra/` |
+
+Train and test documents cover different topics, so a question written for one split can't be
+answered from the other.
+
+## Adding questions
+
+Questions are drafted with an LLM, reviewed by a person, then merged. Run from `api/`:
+
+```powershell
+cd api
+$env:PYTHONPATH = "src"
+# 1. Draft into drafts.jsonl (--dry-run shows the number of LLM calls first)
+uv run python -m knowledge_worker.evaluation.drafting draft ../datasets/bilingual_rag_eval --docs expense_claim_policy.md
+# 2. In drafts.jsonl, set each "status" to "accept" or "reject"; edit "query" or "answer" if needed
+# 3. Append the accepted drafts (only if the whole dataset still validates)
+uv run python -m knowledge_worker.evaluation.drafting merge ../datasets/bilingual_rag_eval
+```
+
+`follow_up` and `unanswerable` questions are written by hand.
 
 ## Query schema
 
@@ -46,6 +70,7 @@ languages, either direction), `exact_term` (codes and names), `numeric`, `table`
 
 ```powershell
 cd api
+$env:PYTHONPATH = "src"
 uv run python -m knowledge_worker.evaluation.validate ../datasets/bilingual_rag_eval
 ```
 
@@ -61,6 +86,6 @@ The test suite runs the validator on this folder, so CI fails on an invalid data
 
 ## Licensing
 
-Synthetic documents (Northstar handbooks, `extra/`) are CC-BY-4.0. `BN.md` is a news article
+Synthetic documents (Northstar handbooks, `extra/`, `eval_test/`) are CC-BY-4.0. `BN.md` is a news article
 (rights reserved by the publisher): it is used for local evaluation only and is excluded from the
 published dataset.

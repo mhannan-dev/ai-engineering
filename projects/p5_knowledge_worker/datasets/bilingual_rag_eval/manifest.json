@@ -1,6 +1,6 @@
 {
   "name": "bilingual-rag-eval",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "documents": [
     {
       "name": "retrieval_operations_handbook.md",
@@ -28,6 +28,78 @@
       "license": "news article, all rights reserved by the publisher",
       "source": "Bangla news report",
       "publishable": false
+    },
+    {
+      "name": "expense_claim_policy.md",
+      "path": "../../sample_documents/eval_test/expense_claim_policy.md",
+      "split": "test",
+      "language": "en",
+      "license": "CC-BY-4.0",
+      "source": "synthetic",
+      "publishable": true
+    },
+    {
+      "name": "clinic_patient_guide_bn.md",
+      "path": "../../sample_documents/eval_test/clinic_patient_guide_bn.md",
+      "split": "test",
+      "language": "bn",
+      "license": "CC-BY-4.0",
+      "source": "synthetic",
+      "publishable": true
+    },
+    {
+      "name": "customer_support_sop.html",
+      "path": "../../sample_documents/eval_test/customer_support_sop.html",
+      "split": "test",
+      "language": "en",
+      "license": "CC-BY-4.0",
+      "source": "synthetic",
+      "publishable": true
+    },
+    {
+      "name": "krishi_loan_guide_bn.html",
+      "path": "../../sample_documents/eval_test/krishi_loan_guide_bn.html",
+      "split": "test",
+      "language": "bn",
+      "license": "CC-BY-4.0",
+      "source": "synthetic",
+      "publishable": true
+    },
+    {
+      "name": "warehouse_safety_manual.pdf",
+      "path": "../../sample_documents/eval_test/warehouse_safety_manual.pdf",
+      "split": "test",
+      "language": "en",
+      "license": "CC-BY-4.0",
+      "source": "synthetic",
+      "publishable": true
+    },
+    {
+      "name": "training_calendar_2027.docx",
+      "path": "../../sample_documents/eval_test/training_calendar_2027.docx",
+      "split": "test",
+      "language": "mixed",
+      "license": "CC-BY-4.0",
+      "source": "synthetic",
+      "publishable": true
+    },
+    {
+      "name": "procurement_rules_bn.docx",
+      "path": "../../sample_documents/eval_test/procurement_rules_bn.docx",
+      "split": "test",
+      "language": "bn",
+      "license": "CC-BY-4.0",
+      "source": "synthetic",
+      "publishable": true
+    },
+    {
+      "name": "power_outage_notice_bn.txt",
+      "path": "../../sample_documents/eval_test/power_outage_notice_bn.txt",
+      "split": "test",
+      "language": "bn",
+      "license": "CC-BY-4.0",
+      "source": "synthetic",
+      "publishable": true
     },
     {
       "name": "hr_leave_policy.md",
