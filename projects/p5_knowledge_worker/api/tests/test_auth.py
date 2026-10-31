@@ -210,3 +210,24 @@ class TestProtectedRoutes:
             "/api/v1/search", json={"query": "Karim salary", "rerank": False}, headers=bearer(karim)
         ).json()
         assert own["results"] and own["results"][0]["document_id"] == doc_id
+
+
+class TestSecretKeyGuard:
+    @pytest.mark.parametrize("key", ["", "short", "dev-secret-key-change-in-production-knowledge-worker"])
+    def test_production_refuses_a_missing_short_or_default_key(self, key):
+        from pydantic import ValidationError
+
+        from knowledge_worker.config import Settings
+
+        with pytest.raises(ValidationError, match="SECRET_KEY"):
+            Settings(ENVIRONMENT="production", SECRET_KEY=key, _env_file=None)
+
+    def test_production_accepts_a_long_random_key(self):
+        from knowledge_worker.config import Settings
+
+        assert Settings(ENVIRONMENT="production", SECRET_KEY="k" * 48, _env_file=None)
+
+    def test_development_allows_the_default_key(self):
+        from knowledge_worker.config import Settings
+
+        assert Settings(ENVIRONMENT="development", _env_file=None)

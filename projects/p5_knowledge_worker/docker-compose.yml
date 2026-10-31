@@ -1,5 +1,10 @@
-# Optional Qdrant server. Without it the API uses embedded Qdrant under data/qdrant.
-# Start: docker compose up -d   then set QDRANT_URL=http://localhost:6333 in api/.env
+# Full stack: Qdrant server + API + web.
+#
+#   cp .env.example .env        # then set SECRET_KEY
+#   docker compose up --build   # web: http://localhost:3000   API: http://localhost:8000/docs
+#
+# Stop `.\run.ps1` first: it uses the same ports. For only the Qdrant server (with the API run
+# locally), use `docker compose up -d qdrant` and set QDRANT_URL=http://localhost:6333 in api/.env.
 services:
   qdrant:
     image: qdrant/qdrant:v1.19.2  # matches qdrant-client 1.19
@@ -10,5 +15,42 @@ services:
       - qdrant_storage:/qdrant/storage
     restart: unless-stopped
 
+  api:
+    build: ./api
+    container_name: p5_api
+    # LLM key and model settings come from api/.env; the values below override it.
+    env_file:
+      - path: api/.env
+        required: false
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-production}
+      # Required in production; the API refuses to start with a missing or short key.
+      SECRET_KEY: ${SECRET_KEY:-}
+      QDRANT_URL: http://qdrant:6333
+      DATA_DIR: /data
+      DATABASE_URL: sqlite:////data/knowledge_worker.db
+    volumes:
+      - api_data:/data
+      # Reuse models already downloaded by `.\run.ps1 -Install` (an empty folder downloads them).
+      - ./data/models:/data/models
+    ports:
+      - "8000:8000"
+    depends_on:
+      - qdrant
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./web
+      args:
+        NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
+    container_name: p5_web
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+    restart: unless-stopped
+
 volumes:
   qdrant_storage:
+  api_data:

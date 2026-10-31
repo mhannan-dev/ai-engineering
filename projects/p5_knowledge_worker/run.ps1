@@ -145,7 +145,8 @@ if ($Web) {
 
 if ($Qdrant) {
     Push-Location $ProjectRoot
-    try { & docker compose up -d } finally { Pop-Location }
+    # Only the Qdrant service; `docker compose up --build` runs the full stack.
+    try { & docker compose up -d qdrant } finally { Pop-Location }
     Write-Host "[OK] Qdrant at http://localhost:6333 (dashboard: /dashboard)." -ForegroundColor Green
     Write-Host "     Set QDRANT_URL=http://localhost:6333 in api/.env and re-index documents." -ForegroundColor DarkGray
     return

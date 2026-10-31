@@ -1,5 +1,7 @@
 # Project 5: Enterprise Knowledge Worker (p5_knowledge_worker)
 
+[![P5 Knowledge Worker](https://github.com/mhannan-dev/ai-engineering/actions/workflows/p5-knowledge-worker.yml/badge.svg)](https://github.com/mhannan-dev/ai-engineering/actions/workflows/p5-knowledge-worker.yml)
+
 Hybrid-search RAG over your own **English and Bangla** documents: dense vectors + BM25, fused with Reciprocal Rank Fusion, reranked by a cross-encoder, and answered with bracketed citations that point to a file and page.
 
 > **Status: Phases 1–6 implemented.** API, web UI, JWT authentication and the retrieval benchmark are in place, and automated checks pass. [Evaluation results](#-evaluation-results-phase-5) are below; the manual end-to-end smoke test remains.
@@ -21,7 +23,7 @@ Hybrid-search RAG over your own **English and Bangla** documents: dense vectors 
 
 Automated checks passed on 2026-10-30:
 
-- API: `uv run pytest`: 214 passed (one upstream deprecation warning). `uv run ruff check .`: clean.
+- API: `uv run pytest`: 219 passed (one upstream deprecation warning). `uv run ruff check .`: clean.
 - Web: `npx eslint src` and `npx tsc --noEmit`: clean.
 - Web: `npm run build`: passed; `/`, `/chat`, `/login`, `/register` and `/search` prerendered as static.
 
@@ -126,6 +128,21 @@ Dense search matches meaning across languages. BM25 matches exact terms (codes, 
 ---
 
 ## 🛠️ Setup
+
+### With Docker (full stack)
+
+Prerequisites: Docker with Compose.
+
+```powershell
+cd projects/p5_knowledge_worker
+cp .env.example .env          # set SECRET_KEY (the API refuses to start without one)
+cp api/.env.example api/.env  # optional: OPENAI_API_KEY for chat answers
+docker compose up --build     # web: http://localhost:3000   API: http://localhost:8000/docs
+```
+
+This runs the web UI, the API (migrations run on start) and a Qdrant server, so there is no embedded-Qdrant lock to manage. The API runs with `ENVIRONMENT=production`: the demo-account button is off, so register an account. Data lives in Docker volumes; models are read from `data/models`, so a machine that already ran `.\run.ps1 -Install` doesn't download them again (otherwise the first start downloads about 3 GB). Stop `.\run.ps1` first, since both use ports 8000 and 3000.
+
+### Local development
 
 Prerequisites: Python 3.12+, [uv](https://astral.sh/uv). Docker is optional.
 
@@ -232,10 +249,10 @@ p5_knowledge_worker/
       core/                         errors, security (password hashing, JWT), sign-in rate limit
       text/                         normalize, language (+ Bijoy detection), bilingual tokenizer, Banglish
       db/                           models (users, documents, chunks), session
-    tests/                          214 tests
+    tests/                          219 tests
   web/                              Next.js UI: documents, search (with retriever comparison), chat, sign-in
   sample_documents/                 eval handbooks + eval_dataset.json; extra/ for manual testing
-  docker-compose.yml                optional Qdrant server
+  docker-compose.yml                full stack: Qdrant server + API + web (Dockerfiles in api/ and web/)
   run.ps1
   data/                             runtime data (git-ignored)
 ```

@@ -9,12 +9,18 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 API_DIR = Path(__file__).resolve().parents[2]
 DATA_DIR = API_DIR.parent / "data"
 DEV_SECRET_KEY = "dev-secret-key-change-in-production-knowledge-worker"
+MIN_SECRET_KEY_LENGTH = 32
+
+# Later files win, so the shared repo-root .env (ai-engineering/.env) comes first and api/.env
+# overrides it. In the Docker image the API lives at /app, which has no repo root above it.
+_ENV_FILES = tuple(
+    [API_DIR.parents[2] / ".env"] if len(API_DIR.parents) > 2 else []
+) + (API_DIR / ".env",)
 
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        # Later files win, so the shared repo-root .env comes first and api/.env overrides it.
-        env_file=(API_DIR.parents[2] / ".env", API_DIR / ".env"),
+        env_file=_ENV_FILES,
         env_file_encoding="utf-8",
         extra="ignore",
         case_sensitive=False,
@@ -99,8 +105,14 @@ class Settings(BaseSettings):
     @model_validator(mode="after")
     def _require_real_secret_outside_dev(self) -> "Settings":
         env = self.ENVIRONMENT.strip().lower()
-        if env not in {"development", "local", "dev", "testing"} and self.SECRET_KEY == DEV_SECRET_KEY:
-            raise ValueError(f"SECRET_KEY must be set (not the default) when ENVIRONMENT={env!r}.")
+        # An empty or short key would make tokens forgeable, so it counts as missing.
+        weak = self.SECRET_KEY == DEV_SECRET_KEY or len(self.SECRET_KEY) < MIN_SECRET_KEY_LENGTH
+        if env not in {"development", "local", "dev", "testing"} and weak:
+            raise ValueError(
+                f"SECRET_KEY must be a random value of at least {MIN_SECRET_KEY_LENGTH} characters "
+                f"when ENVIRONMENT={env!r}. Generate one with: "
+                'python -c "import secrets; print(secrets.token_urlsafe(48))"'
+            )
         return self
 
 
