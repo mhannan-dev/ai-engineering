@@ -60,6 +60,11 @@ class ChatRequest(BaseModel):
     top_k: int = Field(default=5, ge=1, le=20, description="Number of reranked passages to supply as context")
     threshold: float | None = Field(default=None, description="Custom abstention threshold override")
     temperature: float | None = Field(default=None, description="LLM sampling temperature")
+    conversation_id: str | None = Field(
+        default=None,
+        description="Continue this saved conversation. Omit to start a new one; the answer "
+        "reports the new conversation's id.",
+    )
 
 
 class ChatResponse(BaseModel):
@@ -74,3 +79,4 @@ class ChatResponse(BaseModel):
     abstention_reason: str | None = None
     validation: CitationValidationResult
     sources: list[SearchResultChunk] = Field(default_factory=list)
+    conversation_id: str | None = Field(default=None, description="The conversation this turn was saved to")

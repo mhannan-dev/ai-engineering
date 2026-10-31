@@ -24,7 +24,14 @@ from qdrant_client import QdrantClient  # noqa: E402
 from sqlalchemy import delete  # noqa: E402
 
 from knowledge_worker.config import get_settings  # noqa: E402
-from knowledge_worker.db.models import Base, ChunkModel, DocumentModel, UserModel  # noqa: E402
+from knowledge_worker.db.models import (  # noqa: E402
+    Base,
+    ChunkModel,
+    ConversationModel,
+    DocumentModel,
+    MessageModel,
+    UserModel,
+)
 from knowledge_worker.db.session import SessionLocal, engine  # noqa: E402
 from knowledge_worker.generation.llm import FakeLLMClient  # noqa: E402
 from knowledge_worker.ingestion.vector_store import VectorStore  # noqa: E402
@@ -104,6 +111,8 @@ def container():
     with SessionLocal() as db:
         db.execute(delete(ChunkModel))
         db.execute(delete(DocumentModel))
+        db.execute(delete(MessageModel))
+        db.execute(delete(ConversationModel))
         db.execute(delete(UserModel))
         db.commit()
 

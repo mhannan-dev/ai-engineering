@@ -125,11 +125,8 @@ def test_chat_streaming_post_endpoint(seeded_client):
     assert "event: done" in body
 
 
-def test_chat_streaming_get_endpoint(seeded_client):
-    response = seeded_client.get("/api/v1/chat/stream?query=annual+leave&threshold=0.1")
-    assert response.status_code == 200
-    assert "text/event-stream" in response.headers["content-type"]
-
-    body = response.text
-    assert "event: status" in body
-    assert "event: done" in body
+def test_chat_stream_has_no_get_variant(seeded_client):
+    # A GET stream would need the token in the URL (EventSource can't send headers),
+    # which leaks it into logs and history. Only POST is served.
+    response = seeded_client.get("/api/v1/chat/stream?query=annual+leave")
+    assert response.status_code == 405

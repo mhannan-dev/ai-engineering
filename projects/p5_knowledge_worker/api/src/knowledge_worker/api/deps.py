@@ -11,6 +11,7 @@ from knowledge_worker.core.exceptions import UnauthorizedError
 from knowledge_worker.core.security import decode_access_token
 from knowledge_worker.db.session import get_db
 from knowledge_worker.services.container import Container
+from knowledge_worker.services.conversation_service import ConversationService
 from knowledge_worker.services.document_service import DocumentService
 from knowledge_worker.services.user_service import UserService
 
@@ -56,6 +57,13 @@ def get_current_user_id(
 
 
 CurrentUserIdDep = Annotated[str, Depends(get_current_user_id)]
+
+
+def get_conversation_service(db: DatabaseDep) -> ConversationService:
+    return ConversationService(db)
+
+
+ConversationServiceDep = Annotated[ConversationService, Depends(get_conversation_service)]
 
 
 def get_document_service(db: DatabaseDep, container: ContainerDep) -> DocumentService:

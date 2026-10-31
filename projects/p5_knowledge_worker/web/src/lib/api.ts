@@ -121,6 +121,34 @@ export interface ChatRequest {
   top_k?: number;
   threshold?: number | null;
   temperature?: number | null;
+  /** Continue a saved conversation; omit to start a new one. */
+  conversation_id?: string | null;
+}
+
+// Mirror api/src/knowledge_worker/schemas/conversation.py
+
+export interface Conversation {
+  id: string;
+  title: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export type ConversationPage = Page<Conversation>;
+
+export interface StoredMessage {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  citations: Citation[] | null;
+  sources: SearchResultChunk[] | null;
+  validation: CitationValidation | null;
+  is_abstention: boolean;
+  created_at: string;
+}
+
+export interface ConversationDetail extends Conversation {
+  messages: StoredMessage[];
 }
 
 /** Events sent by POST /chat/stream (see generation/generator.py stream_events). */
@@ -136,6 +164,8 @@ export type ChatEvent =
       };
     }
   | { event: "abstention"; data: { reason: string; answer: string } }
+  /** Sent just before `done` once the turn is saved. */
+  | { event: "conversation"; data: { id: string; title: string } }
   | { event: "token"; data: { token: string } }
   | { event: "validation"; data: CitationValidation }
   | {
@@ -348,6 +378,24 @@ export async function streamChat(
 }
 
 // ---------------------------------------------------------------------------
+// Conversations (saved chat history)
+// ---------------------------------------------------------------------------
+
+export function listConversations(limit = 50, offset = 0): Promise<ConversationPage> {
+  return request<ConversationPage>(`${API_V1}/chat/conversations${query({ limit, offset })}`);
+}
+
+export function getConversation(id: string): Promise<ConversationDetail> {
+  return request<ConversationDetail>(`${API_V1}/chat/conversations/${encodeURIComponent(id)}`);
+}
+
+export async function deleteConversation(id: string): Promise<void> {
+  await request<undefined>(`${API_V1}/chat/conversations/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Auth (Phase 6)
 // ---------------------------------------------------------------------------
 
@@ -367,13 +415,22 @@ export interface TokenResponse {
   user: User;
 }
 
-/** Whether the API requires sign-in (AUTH_ENABLED). */
-export async function getAuthConfig(): Promise<{ enabled: boolean }> {
-  return request<{ enabled: boolean }>(`${API_V1}/auth/config`);
+/** Whether sign-in and local demo login are enabled. */
+export interface AuthConfig {
+  enabled: boolean;
+  demo_login_enabled: boolean;
+}
+
+export async function getAuthConfig(): Promise<AuthConfig> {
+  return request<AuthConfig>(`${API_V1}/auth/config`);
 }
 
 export function login(email: string, password: string): Promise<TokenResponse> {
   return postJson<TokenResponse>(`${API_V1}/auth/login`, { email, password });
+}
+
+export function demoLogin(): Promise<TokenResponse> {
+  return postJson<TokenResponse>(`${API_V1}/auth/demo`, {});
 }
 
 export function register(name: string, email: string, password: string): Promise<TokenResponse> {

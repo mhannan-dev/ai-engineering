@@ -3,7 +3,9 @@
 from datetime import UTC, datetime
 
 from sqlalchemy import (
+    JSON,
     BigInteger,
+    Boolean,
     DateTime,
     ForeignKey,
     Index,
@@ -34,6 +36,51 @@ class UserModel(Base):
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=_now)
+
+
+class ConversationModel(Base):
+    """A chat thread. Its messages are deleted with it."""
+
+    __tablename__ = "conversations"
+    __table_args__ = (Index("ix_conversations_user_id_updated_at", "user_id", "updated_at"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    # A users.id, or LOCAL_USER_ID when AUTH_ENABLED=false (no foreign key, as for documents).
+    user_id: Mapped[str] = mapped_column(String(36), nullable=False)
+    title: Mapped[str] = mapped_column(String(120), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=_now)
+
+    messages: Mapped[list["MessageModel"]] = relationship(
+        back_populates="conversation",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        order_by="MessageModel.created_at",
+    )
+
+
+class MessageModel(Base):
+    """One user question or assistant answer. Answers keep their citations and sources so a
+    reopened conversation shows exactly what was cited at the time."""
+
+    __tablename__ = "messages"
+    __table_args__ = (Index("ix_messages_conversation_id_created_at", "conversation_id", "created_at"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    conversation_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("conversations.id", ondelete="CASCADE", name="fk_messages_conversation_id_conversations"),
+        nullable=False,
+    )
+    role: Mapped[str] = mapped_column(String(16), nullable=False)  # "user" | "assistant"
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    citations: Mapped[list | None] = mapped_column(JSON, nullable=True)
+    sources: Mapped[list | None] = mapped_column(JSON, nullable=True)
+    validation: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    is_abstention: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=_now)
+
+    conversation: Mapped[ConversationModel] = relationship(back_populates="messages")
 
 
 class DocumentModel(Base):

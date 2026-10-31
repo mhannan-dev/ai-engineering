@@ -71,3 +71,36 @@ def build_user_prompt(
         f"User Question: {query}{query_note}\n\n"
         f"Please provide a faithful, well-cited answer based strictly on the context passages above."
     )
+
+
+REWRITE_SYSTEM_PROMPT = """You turn the user's latest chat message into a standalone question for a document search engine.
+
+Use the conversation only to resolve what the latest message refers to ("it", "that policy", "and sick leave?", "what about Chattogram?").
+
+Rules:
+- Keep the language and script of the latest message: Bangla stays Bangla, Banglish stays Banglish, English stays English.
+- Keep codes, numbers, names and quoted terms exactly as written.
+- If the latest message is already a complete question, return it unchanged.
+- Do not answer the question, and do not add facts that are not in the conversation.
+- Return one question only."""
+
+
+def build_rewrite_prompt(
+    history: Sequence[tuple[str, str]], question: str, max_answer_chars: int = 600
+) -> str:
+    """The recent (question, answer) turns, oldest first, then the message to rewrite.
+
+    Answers are cut to `max_answer_chars`: resolving a reference needs the topic, not the
+    whole answer, and long answers would cost tokens on every follow-up.
+    """
+    lines = ["Conversation so far:"]
+    for asked, answered in history:
+        if len(answered) > max_answer_chars:
+            answered = answered[:max_answer_chars].rstrip() + " …"
+        lines.append(f"User: {asked}")
+        lines.append(f"Assistant: {answered}")
+    lines.append("")
+    lines.append(f"Latest message: {question}")
+    lines.append("")
+    lines.append("Standalone question:")
+    return "\n".join(lines)
