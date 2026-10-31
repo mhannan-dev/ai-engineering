@@ -1,0 +1,87 @@
+{
+  "name": "bilingual-rag-eval",
+  "version": "0.1.0",
+  "documents": [
+    {
+      "name": "retrieval_operations_handbook.md",
+      "path": "../../sample_documents/retrieval_operations_handbook.md",
+      "split": "test",
+      "language": "en",
+      "license": "CC-BY-4.0",
+      "source": "synthetic",
+      "publishable": true
+    },
+    {
+      "name": "bangla_community_service_handbook.md",
+      "path": "../../sample_documents/bangla_community_service_handbook.md",
+      "split": "test",
+      "language": "bn",
+      "license": "CC-BY-4.0",
+      "source": "synthetic",
+      "publishable": true
+    },
+    {
+      "name": "BN.md",
+      "path": "../../BN.md",
+      "split": "test",
+      "language": "bn",
+      "license": "news article, all rights reserved by the publisher",
+      "source": "Bangla news report",
+      "publishable": false
+    },
+    {
+      "name": "hr_leave_policy.md",
+      "path": "../../sample_documents/extra/hr_leave_policy.md",
+      "split": "train",
+      "language": "en",
+      "license": "CC-BY-4.0",
+      "source": "synthetic",
+      "publishable": true
+    },
+    {
+      "name": "travel_allowance_policy_bn.md",
+      "path": "../../sample_documents/extra/travel_allowance_policy_bn.md",
+      "split": "train",
+      "language": "bn",
+      "license": "CC-BY-4.0",
+      "source": "synthetic",
+      "publishable": true
+    },
+    {
+      "name": "it_security_guidelines.html",
+      "path": "../../sample_documents/extra/it_security_guidelines.html",
+      "split": "train",
+      "language": "en",
+      "license": "CC-BY-4.0",
+      "source": "synthetic",
+      "publishable": true
+    },
+    {
+      "name": "office_faq.txt",
+      "path": "../../sample_documents/extra/office_faq.txt",
+      "split": "train",
+      "language": "en",
+      "license": "CC-BY-4.0",
+      "source": "synthetic",
+      "publishable": true
+    },
+    {
+      "name": "ns200_sensor_manual.pdf",
+      "path": "../../sample_documents/extra/ns200_sensor_manual.pdf",
+      "split": "train",
+      "language": "en",
+      "license": "CC-BY-4.0",
+      "source": "synthetic",
+      "publishable": true
+    },
+    {
+      "name": "onboarding_guide.docx",
+      "path": "../../sample_documents/extra/onboarding_guide.docx",
+      "split": "train",
+      "language": "mixed",
+      "license": "CC-BY-4.0",
+      "source": "synthetic",
+      "publishable": true
+    }
+  ]
+}
