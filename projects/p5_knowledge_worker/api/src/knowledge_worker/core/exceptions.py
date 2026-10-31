@@ -13,11 +13,13 @@ class AppException(Exception):
         message: str,
         status_code: int = status.HTTP_400_BAD_REQUEST,
         details: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
     ):
         super().__init__(message)
         self.message = message
         self.status_code = status_code
         self.details = details or {}
+        self.headers = headers
 
 
 class UnauthorizedError(AppException):
@@ -40,6 +42,27 @@ class FileTooLargeError(AppException):
         super().__init__(message, status.HTTP_413_CONTENT_TOO_LARGE, details)
 
 
+class TooManyRequestsError(AppException):
+    def __init__(self, message: str, retry_after_seconds: int):
+        super().__init__(
+            message,
+            status.HTTP_429_TOO_MANY_REQUESTS,
+            details={"retry_after_seconds": retry_after_seconds},
+            headers={"Retry-After": str(retry_after_seconds)},
+        )
+
+
+class LLMUnavailableError(AppException):
+    """The LLM provider failed (bad key, timeout, outage). The cause is logged, never returned."""
+
+    def __init__(
+        self,
+        message: str = "The answer service is unavailable right now. Please try again shortly.",
+        details: dict[str, Any] | None = None,
+    ):
+        super().__init__(message, status.HTTP_502_BAD_GATEWAY, details)
+
+
 class UnsupportedFileError(AppException):
     def __init__(self, message: str, details: dict[str, Any] | None = None):
         super().__init__(message, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, details)
@@ -51,6 +74,7 @@ def register_exception_handlers(app: FastAPI) -> None:
         return JSONResponse(
             status_code=exc.status_code,
             content={"error": exc.__class__.__name__, "message": exc.message, "details": exc.details},
+            headers=exc.headers,
         )
 
     @app.exception_handler(RequestValidationError)

@@ -1,9 +1,9 @@
 """Sign-up, sign-in and current-user endpoints."""
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Request, status
 
-from knowledge_worker.api.deps import CurrentUserIdDep, SettingsDep, UserServiceDep
-from knowledge_worker.core.exceptions import NotFoundError
+from knowledge_worker.api.deps import ContainerDep, CurrentUserIdDep, SettingsDep, UserServiceDep
+from knowledge_worker.core.exceptions import NotFoundError, UnauthorizedError
 from knowledge_worker.core.security import create_access_token
 from knowledge_worker.db.models import UserModel
 from knowledge_worker.schemas.auth import (
@@ -28,7 +28,10 @@ def _token_for(user: UserModel, settings: SettingsDep) -> TokenResponse:
 
 @router.get("/config", response_model=AuthConfig, summary="Whether sign-in is required")
 def auth_config(settings: SettingsDep) -> AuthConfig:
-    return AuthConfig(enabled=settings.AUTH_ENABLED)
+    return AuthConfig(
+        enabled=settings.AUTH_ENABLED,
+        demo_login_enabled=settings.AUTH_ENABLED and settings.is_local,
+    )
 
 
 @router.post(
@@ -43,9 +46,38 @@ def register(payload: RegisterRequest, users: UserServiceDep, settings: Settings
     return _token_for(user, settings)
 
 
-@router.post("/login", response_model=TokenResponse, summary="Sign in")
-def login(payload: LoginRequest, users: UserServiceDep, settings: SettingsDep) -> TokenResponse:
-    return _token_for(users.authenticate(payload.email, payload.password), settings)
+@router.post(
+    "/login",
+    response_model=TokenResponse,
+    summary="Sign in",
+    description="After repeated failures the client gets 429 with a Retry-After header.",
+)
+def login(
+    payload: LoginRequest,
+    request: Request,
+    users: UserServiceDep,
+    settings: SettingsDep,
+    container: ContainerDep,
+) -> TokenResponse:
+    limiter = container.login_limiter
+    # The socket address, not X-Forwarded-For: that header is client-controlled unless a
+    # trusted proxy sets it.
+    ip = request.client.host if request.client else "unknown"
+    limiter.check(ip, payload.email)  # blocked even if this attempt's password is right
+    try:
+        user = users.authenticate(payload.email, payload.password)
+    except UnauthorizedError:
+        limiter.record_failure(ip, payload.email)
+        raise
+    limiter.reset(ip, payload.email)
+    return _token_for(user, settings)
+
+
+@router.post("/demo", response_model=TokenResponse, summary="Sign in to the local demo account")
+def demo_login(users: UserServiceDep, settings: SettingsDep) -> TokenResponse:
+    if not settings.AUTH_ENABLED or not settings.is_local:
+        raise NotFoundError("Demo login is only available in local development.")
+    return _token_for(users.get_or_create_demo_user(), settings)
 
 
 @router.get("/me", response_model=UserOut, summary="The signed-in user")

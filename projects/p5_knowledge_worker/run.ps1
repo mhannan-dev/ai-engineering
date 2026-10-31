@@ -57,16 +57,43 @@ function Invoke-InApi([scriptblock]$Block) {
     try { & $Block } finally { Pop-Location }
 }
 
-if ($Stop) {
+function Stop-P5Services {
+    # Stops this project's API and web, including orphans. `fastapi dev` runs the app in a
+    # multiprocessing worker whose command line does not mention this project, and Windows does
+    # not stop children when a parent dies. An orphaned worker keeps serving old code on port
+    # 8000 and holds the embedded Qdrant lock on data/qdrant, so every new start fails.
+    $all = @(Get-CimInstance Win32_Process)
+    $patterns = @("*$ApiDir\.venv\*", "*$(Join-Path $ProjectRoot 'web')\node_modules\*")
+    $roots = @($all | Where-Object {
+        $cmd = $_.CommandLine
+        $cmd -and ($patterns | Where-Object { $cmd -like $_ })
+    } | ForEach-Object { $_.ProcessId })
+
     foreach ($port in @(8000, 3000)) {
-        $conns = Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue
-        foreach ($conn in $conns) {
-            if ($conn.OwningProcess) {
-                Stop-Process -Id $conn.OwningProcess -Force -ErrorAction SilentlyContinue
-            }
+        $owners = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue |
+            ForEach-Object { $_.OwningProcess } | Where-Object { $_ } | Sort-Object -Unique
+        foreach ($owner in $owners) {
+            $roots += $owner
+            # The listed owner is often the reloader that already exited; its orphaned
+            # children still hold the socket.
+            $roots += @($all | Where-Object { $_.ParentProcessId -eq $owner } | ForEach-Object { $_.ProcessId })
         }
     }
-    Write-Host "[OK] Ports 8000 and 3000 are free." -ForegroundColor Green
+
+    $roots = @($roots | Sort-Object -Unique)
+    foreach ($id in $roots) {
+        # /T stops the whole tree, so reloader workers are not left behind.
+        & taskkill.exe /PID $id /T /F 2>$null | Out-Null
+    }
+    if ($roots.Count -gt 0) {
+        Write-Host "[!] Stopped leftover API/Web processes." -ForegroundColor Yellow
+        Start-Sleep -Milliseconds 800  # let Windows release the Qdrant lock files
+    }
+}
+
+if ($Stop) {
+    Stop-P5Services
+    Write-Host "[OK] API and Web are stopped." -ForegroundColor Green
     return
 }
 
@@ -124,18 +151,7 @@ if ($Qdrant) {
     return
 }
 
-foreach ($portEntry in @(@{Port=8000; Name="API"}, @{Port=3000; Name="Web"})) {
-    $existing = Get-NetTCPConnection -LocalPort $portEntry.Port -State Listen -ErrorAction SilentlyContinue
-    if ($existing) {
-        Write-Host "[!] Port $($portEntry.Port) ($($portEntry.Name)) already in use. Stopping..." -ForegroundColor Yellow
-        foreach ($conn in $existing) {
-            if ($conn.OwningProcess) {
-                Stop-Process -Id $conn.OwningProcess -Force -ErrorAction SilentlyContinue
-            }
-        }
-    }
-}
-Start-Sleep -Milliseconds 500
+Stop-P5Services
 
 Write-Host "[*] API:     http://localhost:8000  (Swagger: /docs)" -ForegroundColor Cyan
 Write-Host "[*] Web UI:  http://localhost:3000" -ForegroundColor Cyan

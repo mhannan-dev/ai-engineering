@@ -1,5 +1,6 @@
 """Account registration and credential checks."""
 
+import secrets
 import uuid
 
 from sqlalchemy import select
@@ -35,6 +36,19 @@ class UserService:
             raise ConflictError("An account with this email already exists.") from exc
         self.db.refresh(user)
         return user
+
+    def get_or_create_demo_user(self) -> UserModel:
+        email = "demo@knowledge-worker.local"
+        user = self._by_email(email)
+        if user:
+            return user
+        try:
+            return self.register(email, "Demo User", secrets.token_urlsafe(32))
+        except ConflictError:
+            user = self._by_email(email)
+            if user is None:
+                raise
+            return user
 
     def authenticate(self, email: str, password: str) -> UserModel:
         user = self._by_email(email)

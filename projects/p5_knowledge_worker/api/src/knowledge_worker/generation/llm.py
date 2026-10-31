@@ -37,6 +37,14 @@ class LiteLLMClient:
         api_key: str | None = None,
         api_base: str | None = None,
     ):
+        # Load integrations during container startup, before request workers use them. Importing
+        # lazily inside requests lets concurrent workers deadlock on LiteLLM's circular imports.
+        import instructor
+        import litellm
+
+        self._instructor = instructor
+        self._instructor_mode = instructor.Mode
+        self._litellm = litellm
         self.model = model
         self.api_key = api_key
         self.api_base = api_base
@@ -57,16 +65,15 @@ class LiteLLMClient:
         temperature: float = 0.0,
         max_tokens: int = 1500,
     ) -> T:
-        import instructor
-        import litellm
-
         self._configure_env()
 
         # DeepSeek and open-weights models are most reliable with Markdown JSON mode
         if "deepseek" in self.model:
-            client = instructor.from_litellm(litellm.completion, mode=instructor.Mode.MD_JSON)
+            client = self._instructor.from_litellm(
+                self._litellm.completion, mode=self._instructor_mode.MD_JSON
+            )
         else:
-            client = instructor.from_litellm(litellm.completion)
+            client = self._instructor.from_litellm(self._litellm.completion)
 
         kwargs: dict = {
             "model": self.model,
@@ -89,8 +96,6 @@ class LiteLLMClient:
         temperature: float = 0.0,
         max_tokens: int = 1500,
     ) -> Iterator[str]:
-        import litellm
-
         self._configure_env()
 
         kwargs: dict = {
@@ -106,7 +111,7 @@ class LiteLLMClient:
         if self.api_base and not self.model.startswith("deepseek/"):
             kwargs["api_base"] = self.api_base
 
-        response = litellm.completion(**kwargs)
+        response = self._litellm.completion(**kwargs)
         for part in response:
             choices = part.get("choices", [])
             if choices:

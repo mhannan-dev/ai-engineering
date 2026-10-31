@@ -15,6 +15,7 @@ export type AuthState =
 
 interface AuthContextValue {
   state: AuthState;
+  demoLoginEnabled: boolean;
   signIn: (response: TokenResponse) => void;
   signOut: () => void;
 }
@@ -31,12 +32,14 @@ export const PUBLIC_PATHS = ["/login", "/register"];
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>({ status: "loading" });
+  const [demoLoginEnabled, setDemoLoginEnabled] = useState(false);
 
   // State is set only in the promise callbacks, so effects can call this without cascading renders.
   const check = useCallback(
     () =>
       getAuthConfig().then(
         (config) => {
+          setDemoLoginEnabled(config.demo_login_enabled);
           if (!config.enabled) return setState({ status: "disabled" });
           if (!getToken()) return setState({ status: "signed-out" });
           return getMe().then(
@@ -44,7 +47,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             () => setState({ status: getToken() ? "unreachable" : "signed-out" }),
           );
         },
-        () => setState({ status: "unreachable" }),
+        () => {
+          setDemoLoginEnabled(false);
+          setState({ status: "unreachable" });
+        },
       ),
     [],
   );
@@ -67,7 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ state, signIn, signOut }}>
+    <AuthContext.Provider value={{ state, demoLoginEnabled, signIn, signOut }}>
       <AuthGate state={state}>{children}</AuthGate>
     </AuthContext.Provider>
   );
@@ -89,12 +95,20 @@ function AuthGate({ state, children }: { state: AuthState; children: ReactNode }
     if (redirect) router.replace(redirect);
   }, [redirect, router]);
 
-  if (redirect || (!isPublic && state.status === "loading")) {
-    return (
-      <div className="flex flex-1 items-center justify-center py-24" aria-busy="true">
-        <span className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-900 dark:border-zinc-700 dark:border-t-zinc-100" />
+  const blocked = redirect !== null || (!isPublic && state.status === "loading");
+
+  // The page is always rendered (only hidden while the session is checked), so Next.js can
+  // prerender and prefetch every segment for instant navigation.
+  return (
+    <>
+      {blocked && (
+        <div className="flex flex-1 items-center justify-center py-24" aria-busy="true">
+          <span className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-900 dark:border-zinc-700 dark:border-t-zinc-100" />
+        </div>
+      )}
+      <div className={blocked ? "hidden" : "flex flex-1 flex-col"} aria-hidden={blocked || undefined}>
+        {children}
       </div>
-    );
-  }
-  return children;
+    </>
+  );
 }

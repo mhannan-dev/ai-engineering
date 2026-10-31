@@ -13,7 +13,8 @@ DEV_SECRET_KEY = "dev-secret-key-change-in-production-knowledge-worker"
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=(API_DIR / ".env", API_DIR.parents[2] / ".env"),
+        # Later files win, so the shared repo-root .env comes first and api/.env overrides it.
+        env_file=(API_DIR.parents[2] / ".env", API_DIR / ".env"),
         env_file_encoding="utf-8",
         extra="ignore",
         case_sensitive=False,
@@ -38,6 +39,10 @@ class Settings(BaseSettings):
     AUTH_ENABLED: bool = True
     SECRET_KEY: str = DEV_SECRET_KEY
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
+    # Brute-force protection for POST /auth/login (failed attempts per sliding window)
+    LOGIN_MAX_FAILURES: int = 5  # per client IP + email
+    LOGIN_MAX_FAILURES_PER_IP: int = 20  # per client IP, across all emails
+    LOGIN_WINDOW_SECONDS: int = 15 * 60
     LOCAL_USER_ID: str = "local"
 
     # Storage
@@ -63,6 +68,8 @@ class Settings(BaseSettings):
     OPENAI_BASE_URL: str = ""
     LLM_TEMPERATURE: float = 0.0
     LLM_MAX_TOKENS: int = 1500
+    # Follow-up questions are rewritten using this many recent turns (0 turns rewriting off)
+    CHAT_HISTORY_TURNS: int = 3
 
     # Chunking (e5 accepts 512 tokens; leave room for the prefix and heading)
     CHUNK_MAX_TOKENS: int = 400

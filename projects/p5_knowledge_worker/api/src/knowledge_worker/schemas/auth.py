@@ -36,3 +36,4 @@ class AuthConfig(BaseModel):
     """Lets the web app decide whether to show sign-in."""
 
     enabled: bool
+    demo_login_enabled: bool

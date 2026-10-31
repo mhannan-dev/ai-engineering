@@ -63,6 +63,17 @@ def auth_client(container):
         yield client
 
 
+@pytest.fixture
+def local_demo_client(container):
+    settings = get_settings().model_copy(
+        update={"AUTH_ENABLED": True, "ENVIRONMENT": "development"}
+    )
+    app = create_app(lambda: container)
+    app.dependency_overrides[get_settings] = lambda: settings
+    with TestClient(app) as client:
+        yield client
+
+
 def register(client, email="rahim@example.com", password="password123", name="Rahim"):
     return client.post(
         "/api/v1/auth/register", json={"email": email, "name": name, "password": password}
@@ -75,8 +86,32 @@ def bearer(token: str) -> dict[str, str]:
 
 class TestAuthApi:
     def test_config_reports_enabled(self, auth_client, client):
-        assert auth_client.get("/api/v1/auth/config").json() == {"enabled": True}
-        assert client.get("/api/v1/auth/config").json() == {"enabled": False}
+        assert auth_client.get("/api/v1/auth/config").json() == {
+            "enabled": True,
+            "demo_login_enabled": False,
+        }
+        assert client.get("/api/v1/auth/config").json() == {
+            "enabled": False,
+            "demo_login_enabled": False,
+        }
+
+    def test_demo_login_is_available_only_in_local_development(self, auth_client, local_demo_client):
+        assert auth_client.post("/api/v1/auth/demo").status_code == 404
+
+        assert local_demo_client.get("/api/v1/auth/config").json() == {
+            "enabled": True,
+            "demo_login_enabled": True,
+        }
+        first = local_demo_client.post("/api/v1/auth/demo")
+        second = local_demo_client.post("/api/v1/auth/demo")
+        assert first.status_code == second.status_code == 200
+        assert first.json()["user"]["id"] == second.json()["user"]["id"]
+
+        me = local_demo_client.get(
+            "/api/v1/auth/me", headers=bearer(first.json()["access_token"])
+        )
+        assert me.status_code == 200
+        assert me.json()["email"] == "demo@knowledge-worker.local"
 
     def test_register_returns_token_and_user(self, auth_client):
         response = register(auth_client)

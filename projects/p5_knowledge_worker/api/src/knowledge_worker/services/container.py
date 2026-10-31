@@ -11,6 +11,7 @@ from concurrent.futures import ThreadPoolExecutor
 from sqlalchemy import select
 
 from knowledge_worker.config import Settings
+from knowledge_worker.core.rate_limit import LoginRateLimiter
 from knowledge_worker.db.models import DocumentModel
 from knowledge_worker.db.session import SessionLocal
 from knowledge_worker.generation.generator import FaithfulGenerator
@@ -65,6 +66,11 @@ class Container:
             api_base=settings.OPENAI_BASE_URL,
         )
         self.validator = validator or CitationValidator()
+        self.login_limiter = LoginRateLimiter(
+            max_failures=settings.LOGIN_MAX_FAILURES,
+            max_failures_per_ip=settings.LOGIN_MAX_FAILURES_PER_IP,
+            window_seconds=settings.LOGIN_WINDOW_SECONDS,
+        )
         self.generator = FaithfulGenerator(
             self.retriever, self.llm_client, self.settings, self.validator
         )

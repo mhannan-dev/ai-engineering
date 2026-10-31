@@ -7,10 +7,10 @@ import { useAuth } from "@/components/auth/auth-provider";
 import { FormField } from "@/components/auth/form-field";
 import { PasswordField } from "@/components/auth/password-field";
 import { SubmitButton } from "@/components/auth/submit-button";
-import { ApiError, login } from "@/lib/api";
+import { ApiError, demoLogin, login } from "@/lib/api";
 
 export function SignInForm() {
-  const { signIn } = useAuth();
+  const { signIn, demoLoginEnabled } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,6 +23,18 @@ export function SignInForm() {
     setError(null);
     try {
       signIn(await login(email, password));
+      router.replace("/");
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Couldn't sign in right now.");
+      setBusy(false);
+    }
+  }
+
+  async function handleDemoLogin() {
+    setBusy(true);
+    setError(null);
+    try {
+      signIn(await demoLogin());
       router.replace("/");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Couldn't sign in right now.");
@@ -53,6 +65,16 @@ export function SignInForm() {
       )}
 
       <SubmitButton disabled={busy}>{busy ? "Signing in…" : "Sign in"}</SubmitButton>
+      {demoLoginEnabled && (
+        <button
+          type="button"
+          onClick={() => void handleDemoLogin()}
+          disabled={busy}
+          className="flex w-full justify-center rounded-lg border border-zinc-300 px-4 py-2.5 text-sm font-semibold text-zinc-900 transition-colors hover:bg-zinc-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-800 dark:focus-visible:outline-zinc-50"
+        >
+          {busy ? "Signing in…" : "Continue with demo account"}
+        </button>
+      )}
     </form>
   );
 }
