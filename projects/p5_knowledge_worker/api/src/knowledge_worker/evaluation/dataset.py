@@ -6,13 +6,27 @@ import json
 from pathlib import Path
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+
+from knowledge_worker.text.normalize import normalize_text
+
+
+def _as_stored(value: str | None) -> str | None:
+    """Normalize a label the way ingestion normalizes chunk headings.
+
+    Headings are stored after NFC normalization, which decomposes characters like Bangla
+    'য়' (U+09DF) into 'য' + nukta. A label typed with the precomposed form looks identical
+    but never matches, so labels go through the same normalization.
+    """
+    return normalize_text(value) if value is not None else None
 
 
 class EvalRelevanceGrade(BaseModel):
     document_filename: str
     heading: str
     grade: int = Field(ge=0, le=3)
+
+    _normalize_heading = field_validator("heading")(_as_stored)
 
 
 class EvalQuery(BaseModel):
@@ -24,6 +38,8 @@ class EvalQuery(BaseModel):
     expected_heading: str | None = None
     expected_fact: str | None = None
     relevance_grades: list[EvalRelevanceGrade] = Field(default_factory=list)
+
+    _normalize_heading = field_validator("expected_heading")(_as_stored)
 
 
 def get_default_dataset_path() -> Path:

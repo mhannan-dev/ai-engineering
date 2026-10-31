@@ -93,10 +93,67 @@ class TestParsers:
 
     def test_docx_headings_and_tables(self):
         sections = parse_document(make_docx(), "docx")
+        # The table keeps the heading it sits under, as its own section.
         assert [(s.heading, s.text) for s in sections] == [
             ("Leave Policy", "Employees receive 20 days of annual leave."),
             ("Remote Work", "Remote work is allowed two days a week."),
-            ("Table", "Grade | Days\nA | 25"),
+            ("Remote Work", "Grade | Days\nA | 25"),
+        ]
+
+    def test_docx_table_under_a_heading_with_no_paragraphs(self):
+        doc = DocxDocument()
+        doc.add_heading("1. Intro", level=1)
+        doc.add_paragraph("Welcome.")
+        doc.add_heading("2. First week schedule", level=1)
+        table = doc.add_table(rows=2, cols=2)
+        table.cell(0, 0).text, table.cell(0, 1).text = "Day", "Session"
+        table.cell(1, 0).text, table.cell(1, 1).text = "Day 2", "Security training"
+        doc.add_heading("3. Buddy", level=1)
+        doc.add_paragraph("You get a buddy.")
+        buf = io.BytesIO()
+        doc.save(buf)
+
+        sections = parse_document(buf.getvalue(), "docx")
+        assert [(s.heading, s.text) for s in sections] == [
+            ("1. Intro", "Welcome."),
+            ("2. First week schedule", "Day | Session\nDay 2 | Security training"),
+            ("3. Buddy", "You get a buddy."),
+        ]
+
+    def test_docx_table_before_any_heading_and_between_paragraphs(self):
+        doc = DocxDocument()
+        table = doc.add_table(rows=1, cols=2)
+        table.cell(0, 0).text, table.cell(0, 1).text = "Fee", "100"
+        doc.add_heading("Policy", level=1)
+        doc.add_paragraph("Before the table.")
+        inner = doc.add_table(rows=1, cols=2)
+        inner.cell(0, 0).text, inner.cell(0, 1).text = "A", "1"
+        doc.add_paragraph("After the table.")
+        buf = io.BytesIO()
+        doc.save(buf)
+
+        sections = parse_document(buf.getvalue(), "docx")
+        # Text before and after a table stays in order and never merges into the table.
+        assert [(s.heading, s.text) for s in sections] == [
+            (None, "Fee | 100"),
+            ("Policy", "Before the table."),
+            ("Policy", "A | 1"),
+            ("Policy", "After the table."),
+        ]
+
+    def test_docx_merged_cells_and_empty_rows_are_not_repeated(self):
+        doc = DocxDocument()
+        doc.add_heading("Leave", level=1)
+        table = doc.add_table(rows=3, cols=3)
+        table.cell(0, 0).merge(table.cell(0, 1)).text = "Annual"
+        table.cell(0, 2).text = "20"
+        table.cell(1, 0).text, table.cell(1, 1).text, table.cell(1, 2).text = "Sick", "Paid", "14"
+        buf = io.BytesIO()
+        doc.save(buf)
+
+        sections = parse_document(buf.getvalue(), "docx")
+        assert [(s.heading, s.text) for s in sections] == [
+            ("Leave", "Annual | 20\nSick | Paid | 14"),
         ]
 
     def test_markdown_headings(self):

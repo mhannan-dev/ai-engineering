@@ -12,6 +12,8 @@ from typing import Literal
 import pymupdf
 from bs4 import BeautifulSoup
 from docx import Document as DocxDocument
+from docx.table import Table as DocxTable
+from docx.table import _Row as DocxRow
 
 from knowledge_worker.text.normalize import normalize_text
 
@@ -66,24 +68,43 @@ def _parse_docx(data: bytes) -> list[Section]:
             sections.append(Section(text=normalize_text("\n".join(lines)), heading=heading))
             lines.clear()
 
-    for paragraph in doc.paragraphs:
-        text = paragraph.text.strip()
+    # Walk paragraphs and tables in document order, so a table is labelled with the heading
+    # it sits under (for citations and BM25) instead of being collected separately at the end.
+    for block in doc.iter_inner_content():
+        if isinstance(block, DocxTable):
+            # Tables carry a lot of policy content (leave tables, fee schedules). Each table is
+            # its own section so its rows never merge into the surrounding paragraphs.
+            flush()
+            rows = [row for row in (_docx_row_text(r) for r in block.rows) if row]
+            if rows:
+                sections.append(Section(text=normalize_text("\n".join(rows)), heading=heading))
+            continue
+        text = block.text.strip()
         if not text:
             continue
-        style = (paragraph.style.name or "") if paragraph.style is not None else ""
+        style = (block.style.name or "") if block.style is not None else ""
         if style.startswith("Heading") or style == "Title":
             flush()
             heading = normalize_text(text)
         else:
             lines.append(text)
     flush()
-
-    # Tables carry a lot of policy content (leave tables, fee schedules); keep rows as lines.
-    for table in doc.tables:
-        rows = [" | ".join(cell.text.strip() for cell in row.cells) for row in table.rows]
-        if rows:
-            sections.append(Section(text=normalize_text("\n".join(rows)), heading="Table"))
     return sections
+
+
+def _docx_row_text(row: DocxRow) -> str:
+    """Cells joined by ' | '. A merged cell is returned once per column it spans, so repeats
+    of the same underlying cell are skipped."""
+    # Keep the elements themselves: lxml proxies are only identical while referenced, so ids
+    # of discarded proxies could be reused.
+    seen: list[object] = []
+    cells: list[str] = []
+    for cell in row.cells:
+        if any(cell._tc is tc for tc in seen):
+            continue
+        seen.append(cell._tc)
+        cells.append(cell.text.strip())
+    return " | ".join(cells) if any(cells) else ""
 
 
 _MD_HEADING = re.compile(r"^(#{1,6})\s+(.+?)\s*#*\s*$")

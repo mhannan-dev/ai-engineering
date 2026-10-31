@@ -161,8 +161,14 @@ class HybridRetriever:
         sparse_limit: int = 20,
         rrf_k: int = 60,
         threshold: float = 0.25,
+        rerank_pool: int = 20,
     ) -> SearchDebugResult:
-        """Return dense, sparse, fused, and reranked hits side-by-side for inspection & ablation."""
+        """Return dense, sparse, fused, and reranked hits side-by-side for inspection & ablation.
+
+        The reranker sees the top `rerank_pool` fused candidates, like `retrieve_and_rerank`
+        in production, not just the top `limit`; otherwise it could only reorder the fused
+        list and the benchmark would understate what reranking does.
+        """
         normalized_query, was_banglish = normalize_query(query)
         if not normalized_query.strip():
             return SearchDebugResult(
@@ -186,13 +192,14 @@ class HybridRetriever:
         sparse_ids = [hit.chunk_id for hit in sparse_results]
         sparse_ranks = {hit.chunk_id: rank for rank, hit in enumerate(sparse_results, start=1)}
 
-        # 3. RRF Fusion
-        fused = reciprocal_rank_fusion([dense_ids, sparse_ids], k=rrf_k, limit=limit)
-        fused_scores = dict(fused)
-        fused_ids = [chunk_id for chunk_id, _ in fused]
+        # 3. RRF Fusion, keeping a wider pool for the reranker
+        pool = reciprocal_rank_fusion([dense_ids, sparse_ids], k=rrf_k, limit=max(limit, rerank_pool))
+        fused_scores = dict(pool)
+        pool_ids = [chunk_id for chunk_id, _ in pool]
+        fused_ids = pool_ids[:limit]
 
         # 4. Fetch DB records for all chunks
-        all_ids = list(dict.fromkeys(dense_ids + sparse_ids + fused_ids))
+        all_ids = list(dict.fromkeys(dense_ids + sparse_ids + pool_ids))
         chunks_by_id = self._fetch_chunks(user_id, all_ids)
 
         def make_retrieved(
@@ -225,9 +232,9 @@ class HybridRetriever:
             if (hit := make_retrieved(r.chunk_id, r.score, s_rank=sparse_ranks.get(r.chunk_id)))
             is not None
         ]
-        fused_hits = [
+        pool_hits = [
             hit
-            for cid in fused_ids
+            for cid in pool_ids
             if (
                 hit := make_retrieved(
                     cid,
@@ -238,13 +245,15 @@ class HybridRetriever:
             )
             is not None
         ]
+        top = set(fused_ids)
+        fused_hits = [hit for hit in pool_hits if hit.chunk_id in top]
 
-        # 5. Reranked hits (if reranker is present)
+        # 5. Reranked hits (if reranker is present), over the whole candidate pool
         reranked_hits: list[RerankedChunk] = []
-        if self._reranker is not None and fused_hits:
+        if self._reranker is not None and pool_hits:
             rerank_res = rerank_candidates(
                 query=query,
-                candidates=fused_hits,
+                candidates=pool_hits,
                 reranker=self._reranker,
                 threshold=threshold,
                 limit=limit,

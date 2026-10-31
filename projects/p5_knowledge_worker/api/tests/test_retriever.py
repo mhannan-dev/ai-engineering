@@ -197,3 +197,17 @@ class TestHybridRetriever:
         assert debug.normalized_query == "কৃত্রিম বুদ্ধিমত্তা"
         assert len(debug.fused_hits) > 0
         assert debug.fused_hits[0].chunk_id == CHUNK2_1_ID
+
+
+
+class TestSearchDebugRerankPool:
+    def test_rerank_sees_more_than_the_returned_fused_hits(self, populated_container):
+        # limit=1 returns one fused hit, but the reranker still ranks the wider pool, like
+        # retrieve_and_rerank does in production.
+        retriever = HybridRetriever(
+            SessionLocal, populated_container.embedder, populated_container.vectors,
+            populated_container.sparse, reranker=populated_container.reranker,
+        )
+        debug = retriever.search_debug("default_user", "sick leave certificate", limit=1, threshold=0.0)
+        assert len(debug.fused_hits) == 1
+        assert [c.chunk_id for c in debug.reranked_hits] == [CHUNK1_2_ID]

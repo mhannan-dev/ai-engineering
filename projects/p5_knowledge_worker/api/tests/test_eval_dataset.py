@@ -48,3 +48,18 @@ def test_referenced_documents_exist():
             assert doc_in_sample.exists() or doc_in_root.exists(), (
                 f"Referenced document '{q.expected_doc}' for query {q.id} not found on disk"
             )
+
+
+def test_labels_are_normalized_like_stored_headings():
+    from knowledge_worker.evaluation.dataset import EvalQuery
+    from knowledge_worker.text.normalize import normalize_text
+
+    # "সময়" typed with precomposed য় (U+09DF); stored headings are NFC, which decomposes it.
+    typed = "২. খোলা ও বন্ধের সময়"
+    q = EvalQuery.model_validate({
+        "id": "x", "query": "q", "category": "bangla", "expected_heading": typed,
+        "relevance_grades": [{"document_filename": "a.md", "heading": typed, "grade": 3}],
+    })
+    assert q.expected_heading == normalize_text(typed)
+    assert q.relevance_grades[0].heading == normalize_text(typed)
+    assert "য়" not in q.relevance_grades[0].heading
